@@ -27,3 +27,6 @@ Xóa và thay đổi trực tiếp trên file
 5. Phân loại/ tìm task: dành cho task lớn
    - phân loại theo: priority, phần trăm hoàn thành và deadline
    - tìm: theo tên
+  
+   **Hướng dẫn sử dụng file README**
+   1. compile.sh: dùng để biên dịch file 
