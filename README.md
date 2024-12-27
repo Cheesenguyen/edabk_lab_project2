@@ -29,4 +29,7 @@ Xóa và thay đổi trực tiếp trên file
    - tìm: theo tên
   
    **Hướng dẫn sử dụng file README**
-   1. compile.sh: dùng để biên dịch file 
+   1. compile.sh: biên dịch file. Chạy file bằng lệnh ./compile.sh
+   2. run.sh: chạy file vừa biên dịch. Chạy file bằng lệnh ./run.sh
+   3. clean.sh: xóa file sinh ra trong quá trình thực thi
+   4. clone.sh: clone folder từ gituhb về. Chạy file bằng lệnh source ./clone.sh đường link
