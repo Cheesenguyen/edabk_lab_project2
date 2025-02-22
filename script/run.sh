@@ -1,7 +1,7 @@
 cd ..
-cd Project2
+cd toDoList
 
-./project2
+./toDoList
 
 echo "Chay file thanh cong"
 

@@ -1,9 +1,9 @@
 
 cd ..
 
-cd Project2
+cd toDoList
 
-gcc project2.c -o project2
+gcc toDoList.c -o toDoList
 
 echo "Bien dich thanh cong"
 

@@ -1,6 +1,6 @@
 cd ..
-cd Project2
+cd toDoList
 
-rm -f project2
+rm -f toDoList
 
 echo "xoa file project2 thanh cong"
