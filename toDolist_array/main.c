@@ -139,6 +139,32 @@ void SYSTEM_sort_task(int id[], char list[][MAX_TITLE], int progress[], int list
     printf("Tasks sorted by progress.\n");
 }
 
+void SYSTEM_search_task(char list[][MAX_TITLE], int list_length) {
+    if (list_length == 0) {
+        printf("No tasks available to search.\n");
+        return;
+    }
+
+    printf("Enter task title to search: ");
+    while (getchar() != '\n'); // Xóa bộ đệm trước khi nhập
+    char keyword[MAX_TITLE];
+    fgets(keyword, MAX_TITLE, stdin);
+    keyword[strcspn(keyword, "\n")] = '\0'; // Xóa ký tự xuống dòng
+
+    int found = 0;
+    printf("Search results:\n");
+    for (int i = 0; i < list_length; i++) {
+        if (strstr(list[i], keyword) != NULL) { // Kiểm tra xem keyword có trong tiêu đề không
+            printf("[%d] %s\n", i + 1, list[i]);
+            found = 1;
+        }
+    }
+
+    if (!found) {
+        printf("No matching tasks found.\n");
+    }
+}
+
 void SYSTEM_response(int choice, int id[], char list[][MAX_TITLE], int progress[], int *list_length) {
     switch (choice) {
         case 1:
@@ -159,8 +185,11 @@ void SYSTEM_response(int choice, int id[], char list[][MAX_TITLE], int progress[
         case 5:
             SYSTEM_edit_task(id, list, progress, *list_length);
             break;
+        case 6:
+            SYSTEM_search_task(list, *list_length);
+            break;
         case 0:
-            printf("You have exitted app to do list\n");
+            printf ("You exit successfully!");
             exit(0);
     }
 }
@@ -177,7 +206,8 @@ int main() {
         printf("2. Delete Task\n");
         printf("3. View Tasks\n");
         printf("4. Sort Tasks by Progress\n");
-        printf("5. Edit Task\n");  // Mới thêm
+        printf("5. Edit Task\n");
+        printf("6. Search Task\n");  // Mới thêm
         printf("0. Exit\n");
         int choice = INPUT_get_option();
         SYSTEM_response(choice, id, list, progress, &list_length);
