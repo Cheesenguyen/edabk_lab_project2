@@ -70,6 +70,42 @@ int SYSTEM_delete_task(char list[][MAX_TITLE], int *list_length, int id) {
     return 1;
 }
 
+void SYSTEM_edit_task(int id[], char list[][MAX_TITLE], int progress[], int list_length) {
+    if (list_length == 0) {
+        printf("No tasks available to edit.\n");
+        return;
+    }
+
+    int edit_id = INPUT_get_ID(list_length) - 1;  // ID hiển thị từ 1, nhưng mảng từ 0
+
+    printf("Editing Task [%d]: %s - Progress: %d%%\n", edit_id + 1, list[edit_id], progress[edit_id]);
+
+    // Nhập tiêu đề mới (cho phép bỏ qua)
+    printf("Enter new task title (press Enter to keep current): ");
+    while (getchar() != '\n');  // Xóa bộ đệm trước khi nhập chuỗi
+    char new_title[MAX_TITLE];
+    fgets(new_title, MAX_TITLE, stdin);
+    if (new_title[0] != '\n') {  // Nếu không phải chỉ nhấn Enter
+        new_title[strcspn(new_title, "\n")] = '\0';  // Xóa ký tự xuống dòng
+        strcpy(list[edit_id], new_title);
+    }
+
+    // Nhập tiến độ mới (cho phép bỏ qua)
+    printf("Enter new progress (press Enter to keep current): ");
+    char progress_input[10];
+    fgets(progress_input, sizeof(progress_input), stdin);
+    if (progress_input[0] != '\n') {  // Nếu không phải chỉ nhấn Enter
+        int new_progress = atoi(progress_input);  // Chuyển đổi sang số
+        if (new_progress >= 1 && new_progress <= 100) {
+            progress[edit_id] = new_progress;
+        } else {
+            printf("Invalid progress, keeping previous value.\n");
+        }
+    }
+
+    printf("Task updated successfully!\n");
+}
+
 void OUTPUT_view_tasks(char list[][MAX_TITLE], int list_length, int progress[]) {
     if (list_length == 0) {
         printf("No tasks available.\n");
@@ -120,6 +156,9 @@ void SYSTEM_response(int choice, int id[], char list[][MAX_TITLE], int progress[
         case 4:
             SYSTEM_sort_task(id, list, progress, *list_length);
             break;
+        case 5:
+            SYSTEM_edit_task(id, list, progress, *list_length);
+            break;
         case 0:
             exit(0);
     }
@@ -137,6 +176,7 @@ int main() {
         printf("2. Delete Task\n");
         printf("3. View Tasks\n");
         printf("4. Sort Tasks by Progress\n");
+        printf("5. Edit Task\n");  // Mới thêm
         printf("0. Exit\n");
         int choice = INPUT_get_option();
         SYSTEM_response(choice, id, list, progress, &list_length);
