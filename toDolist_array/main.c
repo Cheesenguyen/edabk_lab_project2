@@ -4,13 +4,13 @@
 
 #define MAX_TITLE 50
 #define MAX_TASK 10
-#define LAST_OPTION 4
+#define LAST_OPTION 6
 
 int INPUT_get_option(void) {
     int option;
     while (1) {
         printf("Your option: ");
-        if (scanf("%d", &option) == 1 && option >= 1 && option <= LAST_OPTION) 
+        if (scanf("%d", &option) == 1 && option >= 0 && option <= LAST_OPTION) // Cho phép nhập 0
             return option;
         printf("Invalid option. Please try again!\n");
         while (getchar() != '\n');  // Xóa bộ đệm nhập
@@ -160,6 +160,7 @@ void SYSTEM_response(int choice, int id[], char list[][MAX_TITLE], int progress[
             SYSTEM_edit_task(id, list, progress, *list_length);
             break;
         case 0:
+            printf("You have exitted app to do list\n");
             exit(0);
     }
 }
