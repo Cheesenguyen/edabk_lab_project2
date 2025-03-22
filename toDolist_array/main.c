@@ -4,7 +4,7 @@
 
 #define MAX_TITLE 50
 #define MAX_TASK 10
-#define LAST_OPTION 6
+#define LAST_OPTION 5
 
 int INPUT_get_option(void) {
     int option;
@@ -81,7 +81,7 @@ void SYSTEM_edit_task(int id[], char list[][MAX_TITLE], int progress[], int list
     printf("Editing Task [%d]: %s - Progress: %d%%\n", edit_id + 1, list[edit_id], progress[edit_id]);
 
     // Nhập tiêu đề mới (cho phép bỏ qua)
-    printf("Enter new task title (press Enter to keep current): ");
+    printf("Enter new task title (press Enter to skip): ");
     while (getchar() != '\n');  // Xóa bộ đệm trước khi nhập chuỗi
     char new_title[MAX_TITLE];
     fgets(new_title, MAX_TITLE, stdin);
@@ -91,7 +91,7 @@ void SYSTEM_edit_task(int id[], char list[][MAX_TITLE], int progress[], int list
     }
 
     // Nhập tiến độ mới (cho phép bỏ qua)
-    printf("Enter new progress (press Enter to keep current): ");
+    printf("Enter new progress (press Enter to skip): ");
     char progress_input[10];
     fgets(progress_input, sizeof(progress_input), stdin);
     if (progress_input[0] != '\n') {  // Nếu không phải chỉ nhấn Enter
@@ -116,7 +116,12 @@ void OUTPUT_view_tasks(char list[][MAX_TITLE], int list_length, int progress[]) 
     }
 }
 
-void SYSTEM_sort_task(int id[], char list[][MAX_TITLE], int progress[], int list_length) {
+void SYSTEM_sort_list_of_task(int id[], char list[][MAX_TITLE], int progress[], int list_length) {
+    if (list_length == 0) {
+        printf("No tasks available to sort.\n");
+        return;
+    }
+
     for (int gap = list_length / 2; gap > 0; gap /= 2) {
         for (int i = gap; i < list_length; i++) {
             int tmp_id = id[i];
@@ -136,8 +141,11 @@ void SYSTEM_sort_task(int id[], char list[][MAX_TITLE], int progress[], int list
             strcpy(list[j], tmp_title);
         }
     }
+
     printf("Tasks sorted by progress.\n");
+    OUTPUT_view_tasks(list, list_length, progress);
 }
+
 
 void SYSTEM_search_task(char list[][MAX_TITLE], int list_length) {
     if (list_length == 0) {
@@ -177,19 +185,17 @@ void SYSTEM_response(int choice, int id[], char list[][MAX_TITLE], int progress[
             break;
         }
         case 3:
-            OUTPUT_view_tasks(list, *list_length, progress);
-            break;
-        case 4:
-            SYSTEM_sort_task(id, list, progress, *list_length);
-            break;
-        case 5:
             SYSTEM_edit_task(id, list, progress, *list_length);
             break;
-        case 6:
+        case 4:
+            SYSTEM_sort_list_of_task(id, list, progress, *list_length);
+            break;
+        case 5:
             SYSTEM_search_task(list, *list_length);
             break;
         case 0:
-            printf ("You exit successfully!");
+            printf("You exit successfully!\n");
+            fflush(stdout); // Đảm bảo in ra màn hình trước khi thoát
             exit(0);
     }
 }
@@ -204,10 +210,9 @@ int main() {
         printf("\nTask Manager\n");
         printf("1. Add Task\n");
         printf("2. Delete Task\n");
-        printf("3. View Tasks\n");
-        printf("4. Sort Tasks by Progress\n");
-        printf("5. Edit Task\n");
-        printf("6. Search Task\n");  // Mới thêm
+        printf("3. Edit task\n");
+        printf("4. Sort list of Task\n");
+        printf("5. Search Task\n");  // Mới thêm
         printf("0. Exit\n");
         int choice = INPUT_get_option();
         SYSTEM_response(choice, id, list, progress, &list_length);
