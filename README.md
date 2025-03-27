@@ -21,7 +21,8 @@
 - A C compiler is required to run the program (OS-independent).
 
 ### 3.2 Quick Start
-0. Open any command line interface 
+
+0. Open command line interface (powershell, git bash, wsl). Note that command prompt will not work with these command line.
 1. Clone the repository:
    ```sh
    git clone https://github.com/Cheesenguyen/edabk_lab_project2.git
