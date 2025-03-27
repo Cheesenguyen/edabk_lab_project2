@@ -28,7 +28,7 @@
    ```
 2. Navigate to the project directory:
    ```sh
-   cd edabk_lab_project2/toDolist_array/utils
+   cd edabk_lab_project2/utils
    ```
 3. Compile the program:
    ```sh
