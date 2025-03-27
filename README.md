@@ -21,10 +21,10 @@
 - A C compiler is required to run the program (OS-independent).
 
 ### 3.2 Quick Start
-
+0. Open any command line interface 
 1. Clone the repository:
    ```sh
-   git clone <repository_link>
+   git clone https://github.com/Cheesenguyen/edabk_lab_project2.git
    ```
 2. Navigate to the project directory:
    ```sh
