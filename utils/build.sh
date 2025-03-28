@@ -1,6 +1,6 @@
 cd ..
 
-
-
-gcc main.c -o main
-
+if [ ! -d "build" ]; then
+	mkdir build
+fi
+gcc main.c -o build/main

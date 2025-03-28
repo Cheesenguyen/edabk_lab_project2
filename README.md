@@ -14,6 +14,8 @@
 - Sort task list by completion status.
 - Search for tasks by title.
 
+![image](https://github.com/user-attachments/assets/9bc0ed66-989d-44f8-9629-c6ee74d5b0a2)
+
 ## 3. Getting Started
 
 ### 3.1 Prerequisites
@@ -22,13 +24,14 @@
 
 ### 3.2 Quick Start
 
+0. Open command line interface (powershell, git bash, wsl). Note that command prompt will not work with these command line.
 1. Clone the repository:
    ```sh
-   git clone <repository_link>
+   git clone https://github.com/Cheesenguyen/edabk_lab_project2.git
    ```
 2. Navigate to the project directory:
    ```sh
-   cd edabk_lab_project2/toDolist_array/utils
+   cd edabk_lab_project2/utils
    ```
 3. Compile the program:
    ```sh
