@@ -14,6 +14,8 @@
 - Sort task list by completion status.
 - Search for tasks by title.
 
+![image](https://github.com/user-attachments/assets/9bc0ed66-989d-44f8-9629-c6ee74d5b0a2)
+
 ## 3. Getting Started
 
 ### 3.1 Prerequisites
