@@ -1,4 +1,4 @@
 cd ..
 
 
-./main
+./build/main

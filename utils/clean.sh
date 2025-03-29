@@ -1,5 +1,5 @@
 cd ..
 
-rm -f main
+rm -rf build/
 
 

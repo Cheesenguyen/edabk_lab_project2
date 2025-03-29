@@ -58,10 +58,14 @@ void INPUT_new_task(int id[], char list[][MAX_TITLE], int progress[], int *list_
 }
 
 int SYSTEM_delete_task(char list[][MAX_TITLE], int *list_length, int id) {
-    if (id < 1 || id > *list_length) {
+    if (id < 1 || (id > *list_length && list_length != 0)) {
         printf("Invalid ID!\n");
         return 0;
     }
+    if (list_length == 0){
+	printf("No task available to delete.\n");
+	return 0;
+	}
 
     for (int i = id - 1; i < *list_length - 1; i++) {
         strcpy(list[i], list[i + 1]);
