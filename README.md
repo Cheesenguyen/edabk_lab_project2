@@ -96,11 +96,11 @@
    ```sh
    cd edabk_lab_project2/utils
    ```
-4. Compile the program at utils
+4. Compile the program at utils:
    ```sh
    ./build.sh
    ```
-5. Run the program at utils
+5. Run the program at utils:
    ```sh
    ./run.sh
    ```
