@@ -11,7 +11,7 @@ int INPUT_get_ID(int list_length);
 int INPUT_get_progress(void);
 void INPUT_new_task(int id[], char list[][MAX_TITLE], int progress[], int *list_length);
 int SYSTEM_delete_task(char list[][MAX_TITLE], int *list_length, int id);
-void SYSTEM_edit_task(int id[], char list[][MAX_TITLE], int progress[], int list_length);
+void SYSTEM_edit_task(char list[][MAX_TITLE], int progress[], int list_length);
 void OUTPUT_view_tasks(char list[][MAX_TITLE], int list_length, int progress[]);
 void SYSTEM_sort_list_of_task(int id[], char list[][MAX_TITLE], int progress[], int list_length);
 void SYSTEM_search_task(char list[][MAX_TITLE], int list_length);
@@ -106,7 +106,7 @@ int SYSTEM_delete_task(char list[][MAX_TITLE], int *list_length, int id) {
     return 1;
 }
 
-void SYSTEM_edit_task(int id[], char list[][MAX_TITLE], int progress[], int list_length) {
+void SYSTEM_edit_task(char list[][MAX_TITLE], int progress[], int list_length) {
     int edit_id = INPUT_get_ID(list_length) - 1;  // ID hiển thị từ 1, nhưng mảng từ 0
     char new_title[MAX_TITLE];
     char progress_input[10];
@@ -220,7 +220,7 @@ void SYSTEM_response(int choice, int id[], char list[][MAX_TITLE], int progress[
             break;
         }
         case 3:
-            SYSTEM_edit_task(id, list, progress, *list_length);
+            SYSTEM_edit_task(list, progress, *list_length);
             break;
         case 4:
             SYSTEM_sort_list_of_task(id, list, progress, *list_length);
