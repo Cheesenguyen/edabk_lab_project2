@@ -48,7 +48,7 @@
    ```
 5. Clean up generated files (if needed):
    ```sh
-   ./clear.sh
+   ./clean.sh
    ```
 
 ##

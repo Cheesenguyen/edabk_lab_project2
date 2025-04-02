@@ -25,7 +25,7 @@ int main(void) {
     int list_length = 0;
     
     while (1) {
-        int choice = INPUT_get_option();
+        int choice;
         printf("\nTask Manager\n");
         printf("1. Add Task\n");
         printf("2. Delete Task\n");
@@ -33,6 +33,7 @@ int main(void) {
         printf("4. Sort list of Task\n");
         printf("5. Search Task\n");  // Mới thêm
         printf("0. Exit\n");
+        choice = INPUT_get_option();
         SYSTEM_response(choice, id, list, progress, &list_length);
     }
 }
