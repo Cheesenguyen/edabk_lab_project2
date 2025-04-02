@@ -1,6 +1,10 @@
 # TO-DO LIST SOFTWARE
 
-./bu
+## 1. Overview
+
+- The program helps manage a To-Do List.
+- Provides basic functions to add, edit, delete, sort, and search for tasks.
+- Objective: Create a simple tool to track personal task progress.
 
 ## 2. Features
 
