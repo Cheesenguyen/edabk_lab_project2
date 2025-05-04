@@ -159,106 +159,635 @@ static void normalizeInput(char *str) {
 ### A. Basic Configuration
 
 - Based on LLVM style — customizable and clear.
+
+*Correct example:*  
+  ```c
+  int main(void) {
+    printf("Hello, world!\n");
+    return 0;
+  }
+  ```
 - Even for C code, use `Cpp` language in clang-format.
+
+*Correct example .clang-format file* 
+```c
+Language:        Cpp
+BasedOnStyle:    LLVM
+IndentWidth:     2
+```
 - Do not disable clang-format.
+*Bad example*
+```c
+// clang-format off
+int a=1;int b=2;int c=3;
+``` 
+*Correct example*
+```c
+int a = 1;
+int b = 2;
+int c = 3;
+```
 - Do not use macros to define statements.
+
+*Bad example*
+```c
+#define BEGIN int main() {
+#define END return 0; }
+
+BEGIN
+  printf("Hello\n");
+END
+``` 
+*Correct example*
+```c
+int main(void) {
+  printf("Hello\n");
+  return 0;
+}
+```
 - Do not infer pointer alignment — follow explicit rules.
+
+*Bad example*
+```c
+int* a, *b;
+int * c;
+``` 
+*Correct example*
+```c
+int *a;
+int *b;
+```
 
 ### B. Indentation & Layout
 
 - Indent with 4 spaces, no tabs.
-- Do not use tab characters, only spaces.
-- Indent 4 spaces for continued content.
-- Indent `case` inside `switch`.
-- Indent inside `struct`, `class` with 2 additional spaces.
-- Do not indent function name when breaking to a new line.
-- Do not indent namespace contents.
-- Indent ObjC blocks with 4 spaces.
-- Indent preprocessor directives after `#`.
 
+*Correct example*
+```c
+int main(void) {
+    printf("Hello\n");
+    return 0;
+}
+```
+- Do not use tab characters, only spaces.
+
+*Bad example*
+```c
+int value1 = 10;
+int   value2 = 10;
+``` 
+*Correct example*
+```c
+int value1 = 10;
+int value2 = 10;
+```
+- Indent 4 spaces for continued content.
+ 
+*Correct example*
+```c
+if (very_long_condition_name && another_condition &&
+    yet_another_condition) {
+    do_something();
+}
+```
+- Indent (4 spaces) `case` inside `switch`.
+
+*Correct example*
+```c
+switch (value) {
+    case 1:
+        printf("One\n");
+        break;
+    case 2:
+        printf("Two\n");
+        break;
+    default:
+        printf("Default\n");
+}
+```
+- Do not indent function name when breaking to a new line.
+
+*Correct example*
+```c
+void my_very_long_function_name(
+    int a, int b, int c) {
+    // function body
+}
+```
+- No indent preprocessor directives after `#`.
+
+*Correct example*
+```c
+#ifdef DEBUG
+#define LOG(x) printf(x)
+#else
+#define LOG(x)
+#endif
+```
 ### C. Alignment
 
 - Align `=` signs in consecutive assignments.
+
+*Correct example*
+```c
+int count    = 10;
+int maxCount = 100;
+int minCount = 0;
+```
 - Align consecutive variable declarations.
+
+*Correct example*
+```c
+int     a;
+float   b;
+double  c;
+```
 - Align long expressions in operations.
+
+*Correct example*
+```c
+int result = value1 + value2 +
+             value3 + value4;
+
+```
 - Align end-of-line comments.
+
+*Correct example*
+```c
+int maxUsers   = 100;  // maximum users allowed
+int timeout    = 30;   // timeout in seconds
+int retryCount = 5;    // retry attempts
+```
 - Do not align consecutive macros.
+
+*Correct example*
+```c
+#define MAX_SIZE 100
+#define MIN_SIZE 10
+#define NAME     "Config"
+```
 - Left-align escape lines in strings.
+
+*Correct example*
+```c
+const char *query =
+    "SELECT id, name, age "
+    "FROM users "
+    "WHERE age > 18";
+```
 - Multi-line parameters/arguments align after `(` if present.
 
+*Correct example*
+```c
+void do_something_with_params(int param1,
+                              int param2,
+                              int param3);
+```
 ### D. Braces & Line Breaks
 
 - `{` always on its own line (Allman style) — per GNU/GNOME standard.
+
+*Correct example*
+```c
+if (x > 0)
+{
+    printf("Positive\n");
+}
+```
 - Use `{}` for all `if`, `for`, `while`, even single-line bodies.
+
+*Correct example*
+```c
+if (x > 0)
+{
+    do_something();
+}
+```
 - Do not put functions, loops, conditions, or `if` blocks on the same line if too short.
-- Place `else`, `catch` on their own lines.
+
+*Correct example*
+```c
+if (ready)
+{
+    start();
+}
+```
+- Place `else` on their own lines.
+
+*Correct example*
+```c
+if (error)
+{
+    handle_error();
+}
+else
+{
+    proceed();
+}
+```
 - Break line before binary operators like `+`, `-`, `*`, ...
+
+*Correct example*
+```c
+int result = value1
+           + value2
+           + value3;
+```
 - Break line before `?:` operator for readability.
+
+*Correct example*
+```c
+int value = condition
+          ? 10
+          : 20;
+```
 - Do not put return type on a separate line.
-- Do not break template lists into new lines.
-- Do not apply line break rules for inheritance lists or constructor initializers.
+
+*Bad example*
+```c
+int
+compute_sum(int a, int b)
+{
+    return a + b;
+}
+```
+
+*Bad example*
+```c 
+int compute_sum(int a, int b)
+{
+    return a + b;
+}
+```
 - Long string literals should be split for readability.
 
+*Correct example*
+```c
+const char *msg =
+    "This is a long message "
+    "that is split across lines.";
+```
 ### E. Spaces
 
 - Space before `=` in assignments.
+
+*Correct example*
+```c
+int a = 10;
+```
 - Space after C-style casts.
+
+*Correct example*
+```c
+int a = 10;
+```
 - No space after `!`.
-- Space after `template` keyword.
-- Space before `:` in for-range loops.
+
+*Correct example*
+```c
+if (c != 10)
+```
 - Space before `(` in `if`, `for`, `while`, etc.
+
+*Correct example*
+```c
+if (x > 0)
+{
+    do_something();
+}
+```
 - No space inside parentheses `()`.
+
+*Correct example*
+```c
+printf("Hello\n");
+```
 - No space inside square brackets `[]`.
+
+*Correct example*
+```c
+int value = array[5];
+```
 - No space inside C-style casts.
+
+*Correct example*
+```c
+int result = (int) value;
+```
 - No space in empty parentheses.
+
+*Correct example*
+```c
+void log_message()
+{
+    // ...
+}
+```
 - No space inside angle brackets `< >`.
+
+*Correct example*
+```c
+#include <stdio.h>
+```
 - No space in container initialization like `{1, 2, 3}`.
+
+*Correct example*
+```c
+int arr[] = {1, 2, 3};
+```
 - 1 space before end-of-line comments.
+
+*Correct example*
+```c
+int retries = 3;  // number of attempts
+```
 
 ### F. Argument & Declaration Breaking
 
-- One argument per line if needed.
-- One parameter per line if declaration is long.
+- Left align parameter each line if declaration is long.
+
+*Correct example*
+```c
+void long_declaration(
+    int param1, int param4, int param5, int soMuchParamBehindHere
+    double param2, char* param3
+)
+{
+    // function body
+}
+```
 - Do not force all arguments onto next lines.
 
+*Correct example*
+```c
+void function(int x, int y)
+{
+    // function body
+}
+```
 ### G. Brace Wrapping
 
 - `{` on line after `case`.
-- `{` on line after `class`, `struct`, `union`, `enum`, `namespace`, `extern`, `function`, `control` (`if`, `while`, ...).
+
+*Correct example*
+```c
+switch (x) {
+    case 1:
+    {
+        printf("One\n");
+        break;
+    }
+    case 2:
+    {
+        printf("Two\n");
+        break;
+    }
+    default:
+    {
+        printf("Default\n");
+        break;
+    }
+}
+
+```
+- `{` on it own line after `struct`, `union`, `enum`, `extern`, `function`, `control` (`if`, `while`, ...).
+
+*Correct example*
+```c
+if (x > 0)
+{
+    printf("Positive\n");
+}
+
+class MyClass
+{
+public:
+    void doSomething() { }
+};
+```
 - Indent for `{ }` blocks.
+
+*Correct example*
+```c
+if (x > 0)
+{
+    do_something();
+    printf("Done\n");
+}
+```
 - Insert empty line if block is empty (empty function/struct/namespace).
 
+
+*Correct example*
+```c
+void empty_function()
+{
+    // Empty function
+}
+
+struct EmptyStruct
+{
+    // Empty struct
+};
+```
 ### H. Comment Handling
 
 - Allow reformatting of comments for brevity.
-- Keep at most 1 consecutive empty line.
-- Do not alter namespace closing comments.
+
+*Bad example*
+```c
+// This function calculates the area of a circle using the formula pi * radius^2.
+float area(float radius) {
+    return 3.14 * radius * radius;
+}
+```
+*Correct example*
+```c
+// This function calculates the area of a circle.
+float area(float radius) {
+    return 3.14 * radius * radius;
+}
+```
 - Do not keep blank line at start of block.
+
+*Bad example*
+```c
+if (x > 0)
+{
+    printf("Positive\n");
+}
+```
+*Correct example*
+```c
+if (x > 0)
+{
+    printf("Positive\n");
+}
+```
+- Keep at most 1 consecutive empty line if needed.
+
+*Correct example*
+```c
+int x = 10;
+
+int y = 20;
+```
 - Do not change special pragma comments.
+
+*Bad example*
+```c
+//#pragma once
+
+// some code
+```
+*Correct example*
+```c
+#pragma once
+// some code
+
+```
 
 ### I. Include Sorting
 
-- Do not sort `#include` lines.
-- Do not change order of `using namespace`.
+- Sort `#include` lines if needed. Make sure it follow the file structure
+
+*Bad example*
+```c
+#include "myheader.h"
+#include <stdlib.h>
+#include <stdio.h>
+```
+*Correct example*
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include "myheader.h"
+
+```
 - Preserve order and grouping of `#include` blocks.
-- Do not group `#include` by category.
+
+*Bad example*
+```c
+#include "myheader.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+```
+*Correct example*
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "myheader.h"
+```
+- Must group `#include` by category.
+
+*Correct example*
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include "myheader.h"
+```
 - Do not reorder includes.
-- No need for special macros for `foreach`, `typename`, or namespaces.
+
+*Bad example*
+```c
+#include <stdlib.h>
+#include <stdio.h>
+```
+*Correct example*
+```c
+#include <stdio.h>
+#include <stdlib.h>
+```
 
 ### J. Other Specific Rules
 
 - Line length limit: 80 characters.
-- Do not use raw string literals (`R""()`).
+
+*Bad example*
+```c
+const char *msg = "This is a long message that definitely goes beyond the eighty character limit.";
+```
+*Correct example*
+```c
+const char *msg = "This is a short message within eighty characters.";
+```
 - Do not use macros to define blocks.
+*Bad example*
+```c
+#define BLOCK \
+    printf("Start\n"); \
+    printf("End\n")
+
+void process()
+{
+    BLOCK;
+}
+```
+*Correct example*
+```c
+void process()
+{
+    printf("Start\n");
+    printf("End\n");
+}
+```
 
 ### K. Line Break Penalties
 
 - Breaking on assignment: low penalty.
+
+*Correct example*
+```c
+long_variable_name =
+    some_function_with_long_name();
+```
 - Breaking before first argument in function call: medium.
+
+*Bad example*
+```c
+some_function_name
+(arg1, arg2, arg3);
+```
+*Correct example*
+```c
+some_function_name(arg1, arg2, arg3);
+```
 - Breaking comment lines: high penalty.
-- Breaking after `<<` operator: medium.
+
+*Bad example*
+```c
+// This comment line is long and should
+// not be split arbitrarily like this.
+```
+*Correct example*
+```c
+// This comment line is short and clear
+```
 - Breaking string literals: medium.
-- Breaking in template declarations: low.
+
+*Correct example*
+```c
+const char *msg = "This is part 1 "
+                  "and this is part 2.";
+```
 - Line exceeding character limit: very high penalty.
+
+*Correct example*
+```c
+const char *msg = "Split long strings or break expressions to respect line length.";
+```
 - Breaking return type: medium penalty.
+
+*Bad example*
+```c
+int
+long_function_name(int a, int b);
+```
+*Correct example*
+```c
+int long_function_name int a, int b);
+```
+
 
