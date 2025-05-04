@@ -675,6 +675,7 @@ float area(float radius) {
     return 3.14 * radius * radius;
 }
 ```
+
 - Do not keep blank line at start of block.
 
 *Bad example*
