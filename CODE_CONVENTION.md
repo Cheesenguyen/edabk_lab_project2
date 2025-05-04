@@ -10,14 +10,14 @@ This document defines coding conventions for the C programming language, applied
 ### 1.1 General Rules
 
 - All variable and function names in the program must follow the `camelCase` naming convention.
-- Macro and constant names should be written in all uppercase letters and separated by underscores (`_`). Example: `MAX_TASK`, `DEFAULT_BUFFER_SIZE`.
-- Source file names should be lowercase and separated by underscores. Example: `main.c`, `input_handler.c`.
+- Macro and constant names must be written in all uppercase letters and separated by underscores (`_`). Example: `MAX_TASK`, `DEFAULT_BUFFER_SIZE`.
+- Source file names must be lowercase and separated by underscores. Example: `main.c`, `input_handler.c`.
 
 ### 1.2 Naming Variables
 
 - Variable names must be nouns that clearly describe the function or data the variable stores.
 - Avoid using obscure abbreviations or names with no specific meaning.
-- Main nouns should come first, followed by additional descriptive nouns.
+- Main nouns must come first, followed by additional descriptive nouns.
 
 #### Correct Examples:
 - `taskId`: Identifier of a task.
@@ -31,9 +31,9 @@ This document defines coding conventions for the C programming language, applied
 
 ### 1.3 Naming Functions
 
-- Function names should follow the structure: **verb + noun** to clearly reflect the action the function performs.
+- Function names must follow the structure: **verb + noun** to clearly reflect the action the function performs.
 - Function names also use `camelCase`.
-- It's recommended to use prefixes indicating the function's scope, such as: `input`, `system`, `output`, to group functions by module.
+- Must use prefixes indicating the function's scope, such as: `input`, `system`, `output`, to group functions by module.
 
 #### Correct Examples:
 - `inputGetOption()`: Get option from the user.
@@ -49,15 +49,14 @@ This document defines coding conventions for the C programming language, applied
 
 ## 2. Commenting Guidelines
 
-Comments are essential for helping readers understand the purpose and behavior of the code. However, comments should be concise, clear, and meaningful — avoid repeating what is already evident from the code.
+Comments are essential for helping readers understand the purpose and behavior of the code. However, comments must be concise, clear, and meaningful — avoid repeating what is already evident from the code.
 
 ### 2.1 Function Header Comments
 
 - Each function should have a comment describing its main purpose.
-- Use multi-line comment style `/** ... */` for longer descriptions. Do not use this style for short comments.
+- Use multi-line comment style `/** ... */` for longer descriptions and `//` for short one. Do not use `/** ... */` for short comments.
 
 #### Example:
-
 
 ```c
 /**
@@ -94,7 +93,7 @@ list[i][strcspn(list[i], "\n")] = '\0';
 
 ## 3. Rules for Organizing File Structure in a C Project
 
-Each `.c` file in the project should follow a consistent structural order to facilitate readability and maintenance. Below is a suggested order for components in a `.c` file:
+Each `.c` file in the project must follow a consistent structural order to facilitate readability and maintenance. Below is a order for components you must follow in a `.c` file:
 
 1. Include standard system libraries (`#include <...>`)
 2. Include project header files (`#include "..."`)
@@ -161,9 +160,7 @@ static void normalizeInput(char *str) {
 
 - Based on LLVM style — customizable and clear.
 - Even for C code, use `Cpp` language in clang-format.
-- Minimum C++ standard is Cpp11 — also suitable for modern C code.
 - Do not disable clang-format.
-- Do not use a separate format for C++11 initializer lists.
 - Do not use macros to define statements.
 - Do not infer pointer alignment — follow explicit rules.
 
@@ -208,8 +205,6 @@ static void normalizeInput(char *str) {
 - Space after C-style casts.
 - No space after `!`.
 - Space after `template` keyword.
-- Space before `:` in constructor initializer lists (C++).
-- Space before `:` in inheritance (C++).
 - Space before `:` in for-range loops.
 - Space before `(` in `if`, `for`, `while`, etc.
 - No space inside parentheses `()`.
@@ -224,10 +219,7 @@ static void normalizeInput(char *str) {
 
 - One argument per line if needed.
 - One parameter per line if declaration is long.
-- Do not allow multi-line constructor initializers (not applicable to C).
-- Do not apply C++ inheritance list rules.
 - Do not force all arguments onto next lines.
-- Do not force initializers or constructor parameters onto new lines.
 
 ### G. Brace Wrapping
 
@@ -258,10 +250,6 @@ static void normalizeInput(char *str) {
 - Line length limit: 80 characters.
 - Do not use raw string literals (`R""()`).
 - Do not use macros to define blocks.
-- Do not reorder imports in JavaScript.
-- Preserve quote style in JavaScript.
-- Do not group JavaScript imports.
-- Add space after property and before protocol list in ObjC.
 
 ### K. Line Break Penalties
 
