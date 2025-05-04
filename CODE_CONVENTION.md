@@ -675,8 +675,10 @@ float area(float radius) {
     return 3.14 * radius * radius;
 }
 ```
+
 - Do not keep blank line at start of block.
 
+<<<<<<< HEAD
   *Bad example*
 ```c
 
@@ -685,6 +687,17 @@ if (x > 0)
     printf("Positive\n");
 }
 ```
+=======
+*Bad example*
+
+ ```c
+
+ if (x > 0)
+ {
+ printf("Positive\n");
+ }
+ ```
+>>>>>>> 13b142f21ff4bdc7512bb0840366a6ca597b14ca
 *Correct example*
 ```c
 if (x > 0)
