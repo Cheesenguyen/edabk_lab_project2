@@ -677,9 +677,8 @@ float area(float radius) {
 ```
 - Do not keep blank line at start of block.
 
-*Bad example*
+  *Bad example*
 ```c
-
 
 if (x > 0)
 {
@@ -733,48 +732,6 @@ int y = 20;
 
 #include "myheader.h"
 
-```
-- Preserve order and grouping of `#include` blocks.
-
-*Bad example*
-```c
-#include "myheader.h"       // false: reorder your header's file before standard libarary
-
-#include <stdlib.h>
-#include <stdio.h>
-```
-*Correct example*
-```c
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "myheader.h"
-```
-- Must group `#include` by category.
-
-*Bad example*
-```c
-#include <stdio.h>
-#include "myheader.h"
-#include <stdlib.h>
-```
-*Correct example*
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include "myheader.h"
-```
-- Do not reorder includes.
-
-*Bad example*
-```c
-#include <stdlib.h>
-#include <stdio.h>
-```
-*Correct example*
-```c
-#include <stdio.h>          // <stdio.h> always goes first
-#include <stdlib.h>
 ```
 
 ### J. Other Specific Rules
