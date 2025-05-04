@@ -680,13 +680,13 @@ float area(float radius) {
 
 *Bad example*
 
-    ```c
+ ```c
 
-    if (x > 0)
-    {
-        printf("Positive\n");
-    }
-    ```
+ if (x > 0)
+ {
+ printf("Positive\n");
+ }
+ ```
 *Correct example*
 ```c
 if (x > 0)
