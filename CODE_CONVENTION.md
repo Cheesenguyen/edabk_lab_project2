@@ -171,7 +171,6 @@ static void normalizeInput(char *str) {
 - Indent 4 spaces for continued content.
 - Indent (4 spaces) case inside switch.
 - Do not indent function name when breaking to a new line.
-- Indent preprocessor directives after #.
 
 ### C. Alignment
 - Align = signs in consecutive assignments.
@@ -186,20 +185,15 @@ static void normalizeInput(char *str) {
 - { always on its own line (Allman style) — per GNU/GNOME standard.
 - Use {} for all if, for, while, even single-line bodies.
 - Do not put functions, loops, conditions, or if blocks on the same line if too short.
-- Place else, catch on their own lines.
 - Break line before binary operators like +, -, *, ...
 - Break line before ?: operator for readability.
 - Do not put return type on a separate line.
-- Do not break template lists into new lines.
-- Do not apply line break rules for inheritance lists or constructor initializers.
 - Long string literals should be split for readability.
 
 ### E. Spaces
 - Space before = in assignments.
 - Space after C-style casts.
 - No space after !.
-- Space after template keyword.
-- Space before : in for-range loops.
 - Space before ( in if, for, while, etc.
 - No space inside parentheses ().
 - No space inside square brackets [].
@@ -210,43 +204,36 @@ static void normalizeInput(char *str) {
 - 1 space before end-of-line comments.
 
 ### F. Argument & Declaration Breaking
-- One argument per line if needed.
-- One parameter per line if declaration is long.
+- Left align parameter each line if declaration is long.
 - Do not force all arguments onto next lines.
 
 ### G. Brace Wrapping
 - { on line after case.
-- { on line after class, struct, union, enum, namespace, extern, function, control (if, while, ...).
+- { on line after struct, union, enum, extern, function, control (if, while, ...).
 - Indent for { } blocks.
 - Insert empty line if block is empty (empty function/struct/namespace).
 
 ### H. Comment Handling
 - Allow reformatting of comments for brevity.
-- Keep at most 1 consecutive empty line.
-- Do not alter namespace closing comments.
+- Keep at most 1 consecutive empty line if needed
 - Do not keep blank line at start of block.
 - Do not change special pragma comments.
 
 ### I. Include Sorting
-- Do not sort #include lines.
-- Do not change order of using namespace.
+- Sort `#include` lines if needed. Make sure it follow the file structure
 - Preserve order and grouping of #include blocks.
-- Do not group #include by category.
+- Group #include by category.
 - Do not reorder includes.
-- No need for special macros for foreach, typename, or namespaces.
 
 ### J. Other Specific Rules
 - Line length limit: 80 characters.
-- Do not use raw string literals (R""()).
 - Do not use macros to define blocks.
 
 ### K. Line Break Penalties
 - Breaking on assignment: low penalty.
 - Breaking before first argument in function call: medium.
 - Breaking comment lines: high penalty.
-- Breaking after << operator: medium.
 - Breaking string literals: medium.
-- Breaking in template declarations: low.
 - Line exceeding character limit: very high penalty.
 - Breaking return type: medium penalty.
 
