@@ -51,6 +51,7 @@ This document defines coding conventions for the C programming language, applied
 
 Comments are essential for helping readers understand the purpose and behavior of the code. However, comments must be concise, clear, and meaningful — avoid repeating what is already evident from the code.
 
+
 ### 2.1 Function Header Comments
 
 - Each function should have a comment describing its main purpose.
@@ -155,7 +156,101 @@ static void normalizeInput(char *str) {
 
 
 ## 4. Code Formatting
+### 4.1 Code Formatting without example
 
+### A. Basic Configuration
+- Based on LLVM style — customizable and clear.
+- Even for C code, use Cpp language in clang-format.
+- Do not disable clang-format.
+- Do not use macros to define statements.
+- Do not infer pointer alignment — follow explicit rules.
+
+### B. Indentation & Layout
+- Indent with 4 spaces, no tabs.
+- Do not use tab characters, only spaces.
+- Indent 4 spaces for continued content.
+- Indent (4 spaces) case inside switch.
+- Do not indent function name when breaking to a new line.
+- Indent preprocessor directives after #.
+
+### C. Alignment
+- Align = signs in consecutive assignments.
+- Align consecutive variable declarations.
+- Align long expressions in operations.
+- Align end-of-line comments.
+- Do not align consecutive macros.
+- Left-align escape lines in strings.
+- Multi-line parameters/arguments align after ( if present.
+
+### D. Braces & Line Breaks
+- { always on its own line (Allman style) — per GNU/GNOME standard.
+- Use {} for all if, for, while, even single-line bodies.
+- Do not put functions, loops, conditions, or if blocks on the same line if too short.
+- Place else, catch on their own lines.
+- Break line before binary operators like +, -, *, ...
+- Break line before ?: operator for readability.
+- Do not put return type on a separate line.
+- Do not break template lists into new lines.
+- Do not apply line break rules for inheritance lists or constructor initializers.
+- Long string literals should be split for readability.
+
+### E. Spaces
+- Space before = in assignments.
+- Space after C-style casts.
+- No space after !.
+- Space after template keyword.
+- Space before : in for-range loops.
+- Space before ( in if, for, while, etc.
+- No space inside parentheses ().
+- No space inside square brackets [].
+- No space inside C-style casts.
+- No space in empty parentheses.
+- No space inside angle brackets < >.
+- No space in container initialization like {1, 2, 3}.
+- 1 space before end-of-line comments.
+
+### F. Argument & Declaration Breaking
+- One argument per line if needed.
+- One parameter per line if declaration is long.
+- Do not force all arguments onto next lines.
+
+### G. Brace Wrapping
+- { on line after case.
+- { on line after class, struct, union, enum, namespace, extern, function, control (if, while, ...).
+- Indent for { } blocks.
+- Insert empty line if block is empty (empty function/struct/namespace).
+
+### H. Comment Handling
+- Allow reformatting of comments for brevity.
+- Keep at most 1 consecutive empty line.
+- Do not alter namespace closing comments.
+- Do not keep blank line at start of block.
+- Do not change special pragma comments.
+
+### I. Include Sorting
+- Do not sort #include lines.
+- Do not change order of using namespace.
+- Preserve order and grouping of #include blocks.
+- Do not group #include by category.
+- Do not reorder includes.
+- No need for special macros for foreach, typename, or namespaces.
+
+### J. Other Specific Rules
+- Line length limit: 80 characters.
+- Do not use raw string literals (R""()).
+- Do not use macros to define blocks.
+
+### K. Line Break Penalties
+- Breaking on assignment: low penalty.
+- Breaking before first argument in function call: medium.
+- Breaking comment lines: high penalty.
+- Breaking after << operator: medium.
+- Breaking string literals: medium.
+- Breaking in template declarations: low.
+- Line exceeding character limit: very high penalty.
+- Breaking return type: medium penalty.
+
+### 4.2 Code Formatting example
 ### A. Basic Configuration
 
 - Based on LLVM style — customizable and clear.
@@ -412,7 +507,7 @@ compute_sum(int a, int b)
 }
 ```
 
-*Bad example*
+*Correct example*
 ```c 
 int compute_sum(int a, int b)
 {
@@ -550,21 +645,6 @@ switch (x) {
 }
 
 ```
-- `{` on it own line after `struct`, `union`, `enum`, `extern`, `function`, `control` (`if`, `while`, ...).
-
-*Correct example*
-```c
-if (x > 0)
-{
-    printf("Positive\n");
-}
-
-class MyClass
-{
-public:
-    void doSomething() { }
-};
-```
 - Indent for `{ }` blocks.
 
 *Correct example*
@@ -612,6 +692,7 @@ float area(float radius) {
 
 *Bad example*
 ```c
+
 if (x > 0)
 {
     printf("Positive\n");
@@ -661,6 +742,7 @@ int y = 20;
 ```c
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "myheader.h"
 
 ```
@@ -668,7 +750,7 @@ int y = 20;
 
 *Bad example*
 ```c
-#include "myheader.h"
+#include "myheader.h"       // false: reorder your header's file before standard libarary
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -682,6 +764,12 @@ int y = 20;
 ```
 - Must group `#include` by category.
 
+*Bad example*
+```c
+#include <stdio.h>
+#include "myheader.h"
+#include <stdlib.h>
+```
 *Correct example*
 ```c
 #include <stdio.h>
@@ -697,7 +785,7 @@ int y = 20;
 ```
 *Correct example*
 ```c
-#include <stdio.h>
+#include <stdio.h>          // <stdio.h> always goes first
 #include <stdlib.h>
 ```
 
