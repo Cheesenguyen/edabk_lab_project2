@@ -221,9 +221,6 @@ static void normalizeInput(char *str) {
 
 ### I. Include Sorting
 - Sort `#include` lines if needed. Make sure it follow the file structure
-- Preserve order and grouping of #include blocks.
-- Group #include by category.
-- Do not reorder includes.
 
 ### J. Other Specific Rules
 - Line length limit: 80 characters.
