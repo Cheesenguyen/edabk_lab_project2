@@ -679,6 +679,7 @@ float area(float radius) {
 - Do not keep blank line at start of block.
 
 *Bad example*
+
     ```c
 
     if (x > 0)
