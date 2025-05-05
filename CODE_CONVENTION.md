@@ -204,12 +204,12 @@ static void normalizeInput(char *str) {
 - 1 space before end-of-line comments.
 
 ### F. Argument & Declaration Breaking
-- Left align parameter each line if declaration is long.
+- Left align parameter each line if declaration is long and write on next line after function name.
 - Do not force all arguments onto next lines.
 
 ### G. Brace Wrapping
-- { on line after case.
-- { on line after struct, union, enum, extern, function, control (if, while, ...).
+- { on next line after case.
+- { on next line after struct, union, enum, extern, function, control (if, while, ...).
 - Indent for { } blocks.
 - Insert empty line if block is empty (empty function/struct/namespace).
 
@@ -583,7 +583,7 @@ int retries = 3;  // number of attempts
 
 ### F. Argument & Declaration Breaking
 
-- Left align parameter each line if declaration is long.
+- Left align parameter each line if declaration is long and write on next line after function name.
 
 *Correct example*
 ```c

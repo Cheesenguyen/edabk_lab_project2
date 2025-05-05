@@ -43,34 +43,40 @@ int inputGetOption(void) {
     int option;
     while (1) {
         printf("Your option: ");
-        if (scanf("%d", &option) == 1 && option >= 0 && option <= LAST_OPTION) // Cho phép nhập 0
+        if (scanf("%d", &option) == 1 && option >= 0 && option <= LAST_OPTION) { // Cho phép nhập 0
             return option;
+        }
         printf("Invalid option. Please try again!\n");
         while (getchar() != '\n');  // Xóa bộ đệm nhập
     }
 }
+
 // lấy ID 
 int inputGetID(int listLength) {
     int id;
     while (1) {
         printf("Task ID: ");
-        if (scanf("%d", &id) == 1 && id >= 1 && id <= listLength) 
+        if (scanf("%d", &id) == 1 && id >= 1 && id <= listLength) {
             return id;
+        }
         printf("Invalid ID. Please try again!\n");
         while (getchar() != '\n');
     }
 }
+
 // Lấy % hoàn thành
 int inputGetProgress(void) {
     int progress;
     while (1) {
         printf("Progress (1-100): ");
-        if (scanf("%d", &progress) == 1 && progress >= 1 && progress <= 100) 
+        if (scanf("%d", &progress) == 1 && progress >= 1 && progress <= 100) {
             return progress;
+        }
         printf("Invalid progress. Please try again!\n");
         while (getchar() != '\n');
     }
 }
+
 // lấy nội dung của task mới 
 void inputNewTask(int id[], char list[][MAX_TITLE], int progress[], int *listLength) {
     if (*listLength == MAX_TASK) {
@@ -89,6 +95,7 @@ void inputNewTask(int id[], char list[][MAX_TITLE], int progress[], int *listLen
 
     printf("Task added successfully!\n");
 }
+
 // xóa task 
 int systemDeleteTask(char list[][MAX_TITLE], int *listLength, int id) {
     if (id < 1 || (id > *listLength && listLength != 0)) {
@@ -120,9 +127,9 @@ void systemEditTask(char list[][MAX_TITLE], int progress[], int listLength) {
 
     // Nhập tiêu đề mới (cho phép bỏ qua)
     printf("Enter new task title (press Enter to skip): ");
-    while (getchar() != '\n');  // Xóa bộ đệm trước khi nhập chuỗi
+    while (getchar() != '\n');                     // Xóa bộ đệm trước khi nhập chuỗi
     fgets(newTitle, MAX_TITLE, stdin);
-    if (newTitle[0] != '\n') {  // Nếu không phải chỉ nhấn Enter
+    if (newTitle[0] != '\n') {                     // Nếu không phải chỉ nhấn Enter
         newTitle[strcspn(newTitle, "\n")] = '\0';  // Xóa ký tự xuống dòng
         strcpy(list[idEditTask], newTitle);
     }
@@ -130,17 +137,19 @@ void systemEditTask(char list[][MAX_TITLE], int progress[], int listLength) {
     // Nhập tiến độ mới (cho phép bỏ qua)
     printf("Enter new progress (press Enter to skip): ");
     fgets(inputBuffer, sizeof(inputBuffer), stdin);
-    if (inputBuffer[0] != '\n') {  // Nếu không phải chỉ nhấn Enter
-        int newProgress = atoi(inputBuffer);  // Chuyển đổi sang số
+    if (inputBuffer[0] != '\n') {               // Nếu không phải chỉ nhấn Enter
+        int newProgress = atoi(inputBuffer);    // Chuyển đổi sang số
         if (newProgress >= 1 && newProgress <= 100) {
             progress[idEditTask] = newProgress;
-        } else {
+        } 
+        else {
             printf("Invalid progress, keeping previous value.\n");
         }
     }
 
     printf("Task updated successfully!\n");
 }
+
 // xem task
 void outputViewTasks(char list[][MAX_TITLE], int listLength, int progress[]) {
     if (listLength == 0) {
@@ -151,6 +160,7 @@ void outputViewTasks(char list[][MAX_TITLE], int listLength, int progress[]) {
         printf("[%d] %s - Progress: %d%%\n", i + 1, list[i], progress[i]);
     }
 }
+
 // sắp xếp task theo thứ tự ưu tiên theo % hoàn thành từ thấp đến cao
 void systemSortListOfTask(int id[], char list[][MAX_TITLE], int progress[], int listLength) {
     if (listLength == 0) {
@@ -192,9 +202,9 @@ void systemSearchTask(char list[][MAX_TITLE], int listLength) {
     }
 
     printf("Enter task title to search: ");
-    while (getchar() != '\n'); // Xóa bộ đệm trước khi nhập
+    while (getchar() != '\n');                  // Xóa bộ đệm trước khi nhập
     fgets(keyword, MAX_TITLE, stdin);
-    keyword[strcspn(keyword, "\n")] = '\0'; // Xóa ký tự xuống dòng
+    keyword[strcspn(keyword, "\n")] = '\0';     // Xóa ký tự xuống dòng
 
     printf("Search results:\n");
     for (int i = 0; i < listLength; i++) {
@@ -211,27 +221,33 @@ void systemSearchTask(char list[][MAX_TITLE], int listLength) {
 // phản hồi với user
 void systemResponse(int choice, int id[], char list[][MAX_TITLE], int progress[], int *listLength) {
     switch (choice) {
-        case 1:
+        case 1: {
             inputNewTask(id, list, progress, listLength);
             break;
+        }
         case 2: {
             int delete_id = inputGetID(*listLength);
-            if (systemDeleteTask(list, listLength, delete_id))
+            if (systemDeleteTask(list, listLength, delete_id)) {
                 printf("Task deleted successfully!\n");
+            } 
             break;
         }
-        case 3:
+        case 3: {
             systemEditTask(list, progress, *listLength);
             break;
-        case 4:
+        }
+        case 4: {
             systemSortListOfTask(id, list, progress, *listLength);
             break;
-        case 5:
+        }
+        case 5: {
             systemSearchTask(list, *listLength);
             break;
-        case 0:
+        }
+        case 0: {
             printf("You exit successfully!\n");
             fflush(stdout); // Đảm bảo in ra màn hình trước khi thoát
             exit(0);
+        }
     }
 }
