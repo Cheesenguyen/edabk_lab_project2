@@ -51,4 +51,27 @@
    ./clean.sh
    ```
 
-##
+## 4. Configuration (for developer)
+
+To keep the codebase clean and consistent, this project provides a code style guideline in the file `code_convention.md`.
+
+#### About `code_convention.md`
+- Contains naming rules, commenting standards, file structure, and formatting practices for C source files.
+- Helps contributors follow a unified coding style.
+
+### Formatting Code with `clang-format`
+
+Before committing code, make sure it's properly formatted.
+
+- Format a single file:
+  ```sh
+  clang-format -i fileName.c
+  ```
+
+- Format all `.c` and `.h` files in the current directory:
+  ```sh
+  clang-format -i *.c *.h
+  ```
+
+> 💡 **Tip:** Run `clang-format` before every commit to ensure code style consistency.
+
