@@ -821,4 +821,20 @@ long_function_name(int a, int b);
 int long_function_name int a, int b);
 ```
 
+## 5. How to Use clang-format
 
+To format a single file, use the command:
+
+```
+clang-format -i fileName.c
+```
+
+To format multiple files, use the command:
+
+```
+clang-format -i *.c *.h
+```
+
+with extensions matching all the files you want to format.
+
+It is recommended to run `clang-format` before each commit to ensure consistent formatting.
