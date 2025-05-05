@@ -17,7 +17,7 @@ This document defines coding conventions for the C programming language, applied
 
 - Variable names must be nouns that clearly describe the function or data the variable stores.
 - Avoid using obscure abbreviations or names with no specific meaning.
-- Main nouns must come first, followed by additional descriptive nouns.
+- Main nouns must come first, followed by additional descriptive nouns. Adjective goes first and follow by noun.
 
 #### Correct Examples:
 - `taskId`: Identifier of a task.
