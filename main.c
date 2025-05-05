@@ -110,7 +110,7 @@ int systemDeleteTask(char list[][MAX_TITLE], int *listLength, int id) {
 void systemEditTask(char list[][MAX_TITLE], int progress[], int listLength) {
     int idEditTask = inputGetID(listLength) - 1;  // ID hiển thị từ 1, nhưng mảng từ 0
     char newTitle[MAX_TITLE];
-    char progress[10];
+    char inputBuffer[10];
     if (listLength == 0) {
         printf("No tasks available to edit.\n");
         return;
@@ -129,9 +129,9 @@ void systemEditTask(char list[][MAX_TITLE], int progress[], int listLength) {
 
     // Nhập tiến độ mới (cho phép bỏ qua)
     printf("Enter new progress (press Enter to skip): ");
-    fgets(progress, sizeof(progress), stdin);
-    if (progress[0] != '\n') {  // Nếu không phải chỉ nhấn Enter
-        int newProgress = atoi(progress);  // Chuyển đổi sang số
+    fgets(inputBuffer, sizeof(inputBuffer), stdin);
+    if (inputBuffer[0] != '\n') {  // Nếu không phải chỉ nhấn Enter
+        int newProgress = atoi(inputBuffer);  // Chuyển đổi sang số
         if (newProgress >= 1 && newProgress <= 100) {
             progress[idEditTask] = newProgress;
         } else {
@@ -151,7 +151,7 @@ void outputViewTasks(char list[][MAX_TITLE], int listLength, int progress[]) {
         printf("[%d] %s - Progress: %d%%\n", i + 1, list[i], progress[i]);
     }
 }
-// sắp xếp task theo thứ tự ưu tiên theo % hoàn thành 
+// sắp xếp task theo thứ tự ưu tiên theo % hoàn thành từ thấp đến cao
 void systemSortListOfTask(int id[], char list[][MAX_TITLE], int progress[], int listLength) {
     if (listLength == 0) {
         printf("No tasks available to sort.\n");
@@ -182,7 +182,7 @@ void systemSortListOfTask(int id[], char list[][MAX_TITLE], int progress[], int 
     outputViewTasks(list, listLength, progress);
 }
 
-
+// tìm kiếm task theo title (tìm theo từng chữ cái)
 void systemSearchTask(char list[][MAX_TITLE], int listLength) {
     char keyword[MAX_TITLE];
     int found = 0;
@@ -208,7 +208,7 @@ void systemSearchTask(char list[][MAX_TITLE], int listLength) {
         printf("No matching tasks found.\n");
     }
 }
-
+// phản hồi với user
 void systemResponse(int choice, int id[], char list[][MAX_TITLE], int progress[], int *listLength) {
     switch (choice) {
         case 1:
