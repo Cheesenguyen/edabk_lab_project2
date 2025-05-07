@@ -226,14 +226,6 @@ static void normalizeInput(char *str) {
 - Line length limit: 80 characters.
 - Do not use macros to define blocks.
 
-### K. Line Break Penalties
-- Breaking on assignment: low penalty.
-- Breaking before first argument in function call: medium.
-- Breaking comment lines: high penalty.
-- Breaking string literals: medium.
-- Line exceeding character limit: very high penalty.
-- Breaking return type: medium penalty.
-
 ### 4.2 Code Formatting example
 ### A. Basic Configuration
 
@@ -398,12 +390,17 @@ int timeout    = 30;   // timeout in seconds
 int retryCount = 5;    // retry attempts
 ```
 - Do not align consecutive macros.
+*Bad example*
+```c
+#define MAX_SIZE 100
+#define MIN_SIZE 10
+#define NAME     "Config"
 
 *Correct example*
 ```c
 #define MAX_SIZE 100
 #define MIN_SIZE 10
-#define NAME     "Config"
+#define NAME "Config"
 ```
 - Left-align escape lines in strings.
 
@@ -464,21 +461,29 @@ else
     proceed();
 }
 ```
-- Break line before binary operators like `+`, `-`, `*`, ...
+- Do not break line before operators like `+`, `-`, `*`, ...
 
-*Correct example*
+*Bad example*
 ```c
 int result = value1
            + value2
            + value3;
 ```
-- Break line before `?:` operator for readability.
-
 *Correct example*
+```c
+int result = value1 + value2 + value3;
+```
+- Do not break line before `?:` operator for readability.
+
+*Bad example*
 ```c
 int value = condition
           ? 10
           : 20;
+```
+*Correct example*
+```c
+int value = condition? 10: 20;
 ```
 - Do not put return type on a separate line.
 
@@ -518,7 +523,7 @@ int a = 10;
 
 *Correct example*
 ```c
-int a = 10;
+int a = (int) 10;
 ```
 - No space after `!`.
 
@@ -570,6 +575,10 @@ void log_message()
 ```
 - No space in container initialization like `{1, 2, 3}`.
 
+*Bad example*
+```c
+int arr[] = {1, 2, 3 };
+```
 *Correct example*
 ```c
 int arr[] = {1, 2, 3};
@@ -578,7 +587,7 @@ int arr[] = {1, 2, 3};
 
 *Correct example*
 ```c
-int retries = 3;  // number of attempts
+int retries = 3; // number of attempts
 ```
 
 ### F. Argument & Declaration Breaking
@@ -763,62 +772,6 @@ void process()
     printf("Start\n");
     printf("End\n");
 }
-```
-
-### K. Line Break Penalties
-
-- Breaking on assignment: low penalty.
-
-*Correct example*
-```c
-long_variable_name =
-    some_function_with_long_name();
-```
-- Breaking before first argument in function call: medium.
-
-*Bad example*
-```c
-some_function_name
-(arg1, arg2, arg3);
-```
-*Correct example*
-```c
-some_function_name(arg1, arg2, arg3);
-```
-- Breaking comment lines: high penalty.
-
-*Bad example*
-```c
-// This comment line is long and should
-// not be split arbitrarily like this.
-```
-*Correct example*
-```c
-// This comment line is short and clear
-```
-- Breaking string literals: medium.
-
-*Correct example*
-```c
-const char *msg = "This is part 1 "
-                  "and this is part 2.";
-```
-- Line exceeding character limit: very high penalty.
-
-*Correct example*
-```c
-const char *msg = "Split long strings or break expressions to respect line length.";
-```
-- Breaking return type: medium penalty.
-
-*Bad example*
-```c
-int
-long_function_name(int a, int b);
-```
-*Correct example*
-```c
-int long_function_name int a, int b);
 ```
 
 ## 5. How to Use clang-format

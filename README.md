@@ -53,9 +53,9 @@
 
 ## 4. Configuration (for developer)
 
-To keep the codebase clean and consistent, this project provides a code style guideline in the file `code_convention.md`.
+To keep the codebase clean and consistent, this project provides a code style guideline in the file `CODE_CONVENTION.md`.
 
-#### About `code_convention.md`
+#### About `CODE_CONVENTION.md`
 - Contains naming rules, commenting standards, file structure, and formatting practices for C source files.
 - Helps contributors follow a unified coding style.
 
