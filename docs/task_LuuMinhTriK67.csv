@@ -1,0 +1,18 @@
+﻿ID,Title,Detail,Status,Priority,Deadline
+"Unique task identifier as number
+e.g: ID: 1, ID: 2, ID: 2024
+","Brief task name
+E.g: house work, learn code","Task description
+E.g: Learn C++ and do assignment 1 ","Completion percentage
+E.g: 30%, 40%","Priority level (1 = highest, 5 = lowest)
+E.g : 4","Task due date (dd/mm/yyyy)
+E.g: 02/04/2025"
+1,Remind class of duty shift,"Trace the member list for 5 following
+ people to take responsibility for taking basketball, chair, etc...",100%,3,15/05/2025
+2,Check mail,"Open gmail, outlook to read 
+& reply unread mails",70%,4,15/05/2025
+3,Build model for IoT Challenge,"Connect hardware, take data,
+training model AI to predict",50%,1,16/05/2025
+4,Simulate photonic chip's trip,"Study unit 3, make a simulation
+on Lumerical App",40%,2,18/05/2025
+5,Buy a new book ,Go to book store to take it,0%,5,30/5/2025

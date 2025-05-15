@@ -1,0 +1,14 @@
+﻿ID,Title,Detail,Status,Priority,Deadline
+"Unique task identifier as number
+e.g: ID: 1, ID: 2, ID: 2024
+","Brief task name
+E.g: house work, learn code","Task description
+E.g: Learn C++ and do assignment 1 ","Completion percentage
+E.g: 30%, 40%","Priority level (1 = highest, 5 = lowest)
+E.g : 4","Task due date (dd/mm/yyyy)
+E.g: 02/04/2025"
+1,digital design,learn chapter 4 and try to code with some simple syntax with system verilog,10%,2,5/18/2025
+2,photonic design,"learn chapter 4 and try to figure how to stimulate modes, learn how to use lumerical mode",0%,1,5/18/2025
+3,theory circuit ,"finish final project and report, learn 3 to 4 hours of theory on youtube ",30%,3,5/25/2025
+4,electromagnetic field,"finish chapter 6 and try to do some assignments, watch youtube if needed",20%,4,5/21/2025
+5,AI homework,compare codes ,0%,5,5/21/2025
