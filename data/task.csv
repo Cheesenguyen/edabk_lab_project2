@@ -1,0 +1,98 @@
+﻿ID,Title,Detail,Status,Priority,Deadline
+"Description: Unique identifier for each task.
+
+Data type: Positive integer (integer).
+
+Length: Maximum of 10 digits.
+
+Valid values: From 1 to 2,147,483,647 (32-bit integer limit).
+
+Allowed characters: Digits only (0-9).
+
+Example: 1, 2024, 99999.
+
+Note: Must be unique for each task.
+","Description: A short name describing the task.
+
+Data type: Text string (string).
+
+Length: Maximum 100 characters.
+
+Allowed characters: Letters (a–z, A–Z), digits (0–9), spaces, hyphens (-), underscores (_), and basic punctuation (e.g., , . ' ! ?).
+
+Case sensitivity: Not case-sensitive.
+
+Example: ""House work"", ""Learn_C++"", ""Fix-bug#123"".
+
+Note: Avoid all-uppercase input; special symbols like @, #, $, % are not allowed.","Description: Detailed description of the task.
+
+Data type: Long text string (string).
+
+Length: Maximum 1000 characters.
+
+Allowed characters: Same as Title, but also allows line breaks (\n) and extended punctuation (: ; () [] {}).
+
+Example: ""Learn C++ and do assignment 1.\nThen review chapter 2.""
+
+Note: Can contain multiple lines and full sentences.","Description: Task completion percentage.
+
+Data type: Integer (integer), representing percent.
+
+Valid values: From 0 to 100.
+
+Display format: Percent symbol (%) can be shown, but value stored as number.
+
+Example: 30, 100.
+
+Note: 0 means not started, 100 means fully completed.","Description: Task priority level.
+
+Data type: Integer (integer).
+
+Valid values: From 1 to 5.
+
+Meaning:
+
+1: Highest priority.
+
+5: Lowest priority.
+
+Example: 2, 4.
+
+Note: Used to sort tasks by importance.","Description: Task due date.
+
+Data type: Date (date).
+
+Format: dd/mm/yyyy (day/month/year).
+
+Valid values:
+
+dd: from 01 to 31 (depends on month).
+
+mm: from 01 to 12.
+
+yyyy: from 1900 to 2099.
+
+Allowed characters: Digits and slashes only (/).
+
+Example: 02/04/2025, 15/12/2024.
+
+Note: Invalid or non-existent dates (e.g., 31/02/2025) are not accepted"
+14,coding,learn verilog,1%,3,20/05/2025
+89,graduate project,Router,10.00%,5,27/05/2025
+33,Eating,cooking,100%,1,15/05/2025
+8,Homework,Learn english,20%,4,26/05/2025
+3,shoping,buy noodle,0%,1,18/05/2025
+1,Remind class of duty shift,"Trace the member list for 5 following
+ people to take responsibility for taking basketball, chair, etc...",100%,3,15/05/2025
+2,Check mail,"Open gmail, outlook to read 
+& reply unread mails",70%,4,15/05/2025
+3,Build model for IoT Challenge,"Connect hardware, take data,
+training model AI to predict",50%,1,16/05/2025
+4,Simulate photonic chip's trip,"Study unit 3, make a simulation
+on Lumerical App",40%,2,18/05/2025
+5,Buy a new book ,Go to book store to take it,0%,5,30/05/2025
+1,digital design,learn chapter 4 and try to code with some simple syntax with system verilog,10%,2,5/18/2025
+2,photonic design,"learn chapter 4 and try to figure how to stimulate modes, learn how to use lumerical mode",0%,1,5/18/2025
+3,theory circuit ,"finish final project and report, learn 3 to 4 hours of theory on youtube ",30%,3,5/25/2025
+4,electromagnetic field,"finish chapter 6 and try to do some assignments, watch youtube if needed",20%,4,5/21/2025
+5,AI homework,compare codes ,0%,5,5/21/2025
