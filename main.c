@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #define MAX_TITLE 50
 #define MAX_TASK 10
 #define LAST_OPTION 5
@@ -19,6 +20,8 @@ void systemSearchTask(char list[][MAX_TITLE], int listLength);
 void systemResponse(
     int choice, int id[], char list[][MAX_TITLE], int progress[],
     int *listLength);
+int is_next_integer(const char* ptr);
+int is_detail_empty(const char* ptr);
 
 struct taskInfo{
   int  id[MAX_TASK];
@@ -147,51 +150,53 @@ int systemDeleteTask(char list[][MAX_TITLE], int *listLength, int id)
   return 1;
 }
 // sửa task
-void systemEditTask(char list[][MAX_TITLE], int progress[], int listLength)
-{
-  int idEditTask =
-      inputGetID(listLength) - 1; // ID hiển thị từ 1, nhưng mảng từ 0
-  char newTitle[MAX_TITLE];
-  char inputBuffer[10];
-  if (listLength == 0)
-  {
-    printf("No tasks available to edit.\n");
-    return;
-  }
+void systemEditTask(const char *filePath, taskInfo *taskData) {
+    // Bước 1: Load dữ liệu từ file
+    INPUT_read_file(filePath, taskData, &taskData->listLength);
 
-  printf(
-      "Editing Task [%d]: %s - Progress: %d%%\n", idEditTask + 1,
-      list[idEditTask], progress[idEditTask]);
-
-  // Nhập tiêu đề mới (cho phép bỏ qua)
-  printf("Enter new task title (press Enter to skip): ");
-  while (getchar() != '\n')
-    ; // Xóa bộ đệm trước khi nhập chuỗi
-  fgets(newTitle, MAX_TITLE, stdin);
-  if (newTitle[0] != '\n')
-  { // Nếu không phải chỉ nhấn Enter
-    newTitle[strcspn(newTitle, "\n")] = '\0'; // Xóa ký tự xuống dòng
-    strcpy(list[idEditTask], newTitle);
-  }
-
-  // Nhập tiến độ mới (cho phép bỏ qua)
-  printf("Enter new progress (press Enter to skip): ");
-  fgets(inputBuffer, sizeof(inputBuffer), stdin);
-  if (inputBuffer[0] != '\n')
-  { // Nếu không phải chỉ nhấn Enter
-    int newProgress = atoi(inputBuffer); // Chuyển đổi sang số
-    if (newProgress >= 1 && newProgress <= 100)
-    {
-      progress[idEditTask] = newProgress;
+    if (taskData->listLength == 0) {
+        printf("No tasks available to edit.\n");
+        return;
     }
-    else
-    {
-      printf("Invalid progress, keeping previous value.\n");
-    }
-  }
 
-  printf("Task updated successfully!\n");
+    // Bước 2: Nhập ID cần sửa
+    int idEditTask = inputGetID(taskData->listLength) - 1; // Hiển thị từ 1
+
+    char newTitle[MAX_TITLE];
+    char inputBuffer[10];
+
+    printf("Editing Task [%d]: %s - Progress: %d%%\n",
+           idEditTask + 1,
+           taskData->list[idEditTask],
+           taskData->progress[idEditTask]);
+
+    // Nhập tiêu đề mới (cho phép bỏ qua)
+    printf("Enter new task title (press Enter to skip): ");
+    while (getchar() != '\n'); // Xóa bộ đệm
+    fgets(newTitle, MAX_TITLE, stdin);
+    if (newTitle[0] != '\n') {
+        newTitle[strcspn(newTitle, "\n")] = '\0'; // Xoá newline
+        strcpy(taskData->list[idEditTask], newTitle);
+    }
+
+    // Nhập tiến độ mới
+    printf("Enter new progress (press Enter to skip): ");
+    fgets(inputBuffer, sizeof(inputBuffer), stdin);
+    if (inputBuffer[0] != '\n') {
+        int newProgress = atoi(inputBuffer);
+        if (newProgress >= 1 && newProgress <= 100) {
+            taskData->progress[idEditTask] = newProgress;
+        } else {
+            printf("Invalid progress, keeping previous value.\n");
+        }
+    }
+
+    printf("Task updated successfully!\n");
+
+    // Bước 3: Ghi lại toàn bộ file
+    SYSTEM_overwrite_file(filePath, taskData);
 }
+
 
 // xem task
 void outputViewTasks(char list[][MAX_TITLE], int listLength, int progress[])
@@ -320,3 +325,87 @@ void systemResponse(
     }
   }
 }
+
+int is_next_integer(const char* ptr) {
+    int temp;
+    return sscanf(ptr, "%d", &temp) == 1;
+}
+
+int is_detail_empty(const char* ptr) {
+    char temp[2];
+    return (sscanf(ptr, "\"%1[^\"]\"", temp) != 1);
+}
+
+void INPUT_read_file(const char* filePath, taskInfo *taskData, int *taskCount) {
+    FILE* fileStream = fopen(filePath, "r");
+    if (fileStream == NULL) {
+      fprintf(stderr, "Error: Cannot open file '%s'\n", filePath);
+      perror("System error");
+      return;
+    }
+    int currentIndex = 0;
+    char rawLine[512];
+
+    if (!fileStream) {
+        perror("Cannot open file");
+        return;
+    }
+
+    // Bỏ qua dòng tiêu đề và mô tả
+    fgets(rawLine, sizeof(rawLine), fileStream);
+    fgets(rawLine, sizeof(rawLine), fileStream);
+
+    while ((fgets(rawLine, sizeof(rawLine), fileStream)) && currentIndex < MAX_TASK) {
+        char extractedTitle[MAX_TITLE] = "";
+        int charOffset = 0;
+        char* linePtr = rawLine;
+
+        // Đọc ID (có thể bị thiếu)
+        if (is_next_integer(linePtr)) {
+            sscanf(linePtr, "%d,%*[^,],%n", &taskData->id[currentIndex], &charOffset);
+            linePtr += charOffset;
+        } else {
+            taskData->id[currentIndex] = -1;
+            linePtr = strchr(linePtr, '\"');
+        }
+
+        // Đọc nội dung task
+        if (sscanf(linePtr, "\"%[^\"]\"%n", extractedTitle, &charOffset) == 1) {
+            strncpy(taskData->list[currentIndex], extractedTitle, MAX_TITLE - 1);
+            taskData->list[currentIndex][MAX_TITLE - 1] = '\0';
+            linePtr += charOffset;
+        } else {
+            strcpy(taskData->list[currentIndex], "\0");
+            linePtr = strchr(linePtr, ',');
+        }
+
+        // Đọc tiến độ %
+        if (sscanf(linePtr, ",%d%%,", &taskData->progress[currentIndex]) != 1) {
+            taskData->progress[currentIndex] = -1;
+        }
+
+        currentIndex++;
+    }
+
+    *taskCount = currentIndex;
+    fclose(fileStream);
+}
+
+void SYSTEM_write_task_to_file(const char* filePath, taskInfo *taskData) {
+    FILE* fileStream = fopen(filePath, "a");
+
+    if (fileStream == NULL) {
+        printf("File pointer is NULL.\n");
+        return;
+    }
+
+    int lastIndex = taskData->listLength - 1;
+
+    fprintf(fileStream, "%d, ,\"%s\",%d%%, , \n",
+            taskData->id[lastIndex],
+            taskData->list[lastIndex],
+            taskData->progress[lastIndex]);
+
+    fclose(fileStream);
+}
+
