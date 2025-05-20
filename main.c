@@ -9,9 +9,8 @@
 int  inputGetOption(void);
 int  inputGetID(int listLength);
 int  inputGetProgress(void);
-void inputNewTask(
-    int id[], char list[][MAX_TITLE], int progress[], int *listLength);
-int  systemDeleteTask(char list[][MAX_TITLE], int *listLength, int id);
+void inputNewTask(int id[], char list[][MAX_TITLE], int progress[], int *listLength);
+    int  systemDeleteTask(char list[][MAX_TITLE], int *listLength, int id);
 void systemEditTask(char list[][MAX_TITLE], int progress[], int listLength);
 void outputViewTasks(char list[][MAX_TITLE], int listLength, int progress[]);
 void systemSortListOfTask(
@@ -21,12 +20,21 @@ void systemResponse(
     int choice, int id[], char list[][MAX_TITLE], int progress[],
     int *listLength);
 
-int main(void)
-{
+struct taskInfo{
   int  id[MAX_TASK];
   char list[MAX_TASK][MAX_TITLE];
   int  progress[MAX_TASK];
-  int  listLength = 0;
+  int  listLength;
+};
+typedef struct taskInfo taskInfo;
+
+int main(void)
+{ 
+  taskInfo task1;
+  task1.id[MAX_TASK];
+  task1.list[MAX_TASK][MAX_TITLE];
+  task1.progress[MAX_TASK];
+  task1.listLength = 0;
 
   while (1)
   {
@@ -39,7 +47,7 @@ int main(void)
     printf("5. Search Task\n"); // Mới thêm
     printf("0. Exit\n");
     choice = inputGetOption();
-    systemResponse(choice, id, list, progress, &listLength);
+    systemResponse(choice, task1.id, task1.list, task1.progress, &task1.listLength);
   }
 }
 
