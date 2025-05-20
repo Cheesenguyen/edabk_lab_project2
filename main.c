@@ -30,54 +30,53 @@ typedef struct taskInfo taskInfo;
 
 int main(void)
 { 
-  taskInfo task1;
-  task1.id[MAX_TASK];
-  task1.list[MAX_TASK][MAX_TITLE];
-  task1.progress[MAX_TASK];
-  task1.listLength = 0;
+  taskInfo taskData;
+  taskData.listLength = 0;
 
   while (1)
   {
-    int choice;
+    int userOption;
     printf("\nTask Manager\n");
     printf("1. Add Task\n");
     printf("2. Delete Task\n");
-    printf("3. Edit task\n");
-    printf("4. Sort list of Task\n");
-    printf("5. Search Task\n"); // Mới thêm
+    printf("3. Edit Task\n");
+    printf("4. Sort List of Tasks\n");
+    printf("5. Search Task\n");
     printf("0. Exit\n");
-    choice = inputGetOption();
-    systemResponse(choice, task1.id, task1.list, task1.progress, &task1.listLength);
+
+    userOption = inputGetOption();
+    systemResponse(userOption, taskData.id, taskData.list, taskData.progress, &taskData.listLength);
   }
 }
+
 
 //lấy lựa chọn của user
 int inputGetOption(void)
 {
-  int option;
+  int userOption;
   while (1)
   {
     printf("Your option: ");
-    if (scanf("%d", &option) == 1 && option >= 0 && option <= LAST_OPTION)
-    { // Cho phép nhập 0
-      return option;
+    if (scanf("%d", &userOption) == 1 && userOption >= 0 && userOption <= LAST_OPTION)
+    {
+      return userOption;
     }
     printf("Invalid option. Please try again!\n");
     while (getchar() != '\n')
-      ; // Xóa bộ đệm nhập
+      ;
   }
 }
 
 // lấy ID
-int inputGetID(int listLength)
+int inputGetID(int totalTasks)
 {
-  int id;
+  int taskID;
   while (1)
   {
     printf("Task ID: ");
-    if (scanf("%d", &id) == 1 && id >= 1 && id <= listLength)
+    if (scanf("%d", &taskID) == 1 && taskID >= 1 && taskID <= totalTasks)
     {
-      return id;
+      return taskID;
     }
     printf("Invalid ID. Please try again!\n");
     while (getchar() != '\n')
@@ -85,16 +84,17 @@ int inputGetID(int listLength)
   }
 }
 
+
 // Lấy % hoàn thành
 int inputGetProgress(void)
 {
-  int progress;
+  int taskProgress;
   while (1)
   {
     printf("Progress (1-100): ");
-    if (scanf("%d", &progress) == 1 && progress >= 1 && progress <= 100)
+    if (scanf("%d", &taskProgress) == 1 && taskProgress >= 1 && taskProgress <= 100)
     {
-      return progress;
+      return taskProgress;
     }
     printf("Invalid progress. Please try again!\n");
     while (getchar() != '\n')
