@@ -1,3 +1,6 @@
+#define _XOPEN_SOURCE 700 
+#define _POSIX_C_SOURCE 200809L  
+
 #include <ctype.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -62,6 +65,7 @@ int main(void)
     Task tasks[MAX_TASK];
     const char *file = "./docs/task.csv";
     int taskCount = 0;
+    char absfile[PATH_MAX];
 
     /* 1) Nếu chưa có file -> tạo mới file trống với 2 dòng mô tả */
     int created = 0;
@@ -73,8 +77,6 @@ int main(void)
 
     /* 2) Đọc dữ liệu */
     inputReadFile(file, tasks, &taskCount);
-
-    char absfile[PATH_MAX];
     to_abs_path(file, absfile, sizeof(absfile));
     if (created) {
         printf("Created new data file: %s\n", absfile);
@@ -167,6 +169,7 @@ void inputNewTask(Task tasks[], int *taskCount)
 /* ---- FEATURE: DELETE ---- */
 int systemDeleteTask(Task tasks[], int *taskCount, int index1based)
 {
+    int idx = index1based - 1;
     if (*taskCount == 0)
     {
         printf("No task available to delete.\n");
@@ -178,7 +181,6 @@ int systemDeleteTask(Task tasks[], int *taskCount, int index1based)
         return 0;
     }
 
-    int idx = index1based - 1;
     for (int i = idx; i < *taskCount - 1; ++i)
     {
         tasks[i] = tasks[i + 1]; /* dịch cả id/list/progress cùng nhau */
@@ -190,6 +192,9 @@ int systemDeleteTask(Task tasks[], int *taskCount, int index1based)
 /* ---- FEATURE: EDIT ---- */
 void systemEditTask(const char *filePath, Task tasks[], int *taskCount)
 {
+    int idx = inputGetID(*taskCount) - 1;
+    char newTitle[MAX_TITLE];
+    char buf[16];
     /* nạp lại dữ liệu từ file (giữ nguyên hành vi cũ) */
     inputReadFile(filePath, tasks, taskCount);
     if (*taskCount == 0)
@@ -198,9 +203,6 @@ void systemEditTask(const char *filePath, Task tasks[], int *taskCount)
         return;
     }
 
-    int idx = inputGetID(*taskCount) - 1;
-    char newTitle[MAX_TITLE];
-    char buf[16];
 
     printf("Editing [%d] %s - %d%%\n",
            idx + 1, tasks[idx].list, tasks[idx].progress);
@@ -343,8 +345,8 @@ void systemResponse(int choice, Task tasks[], int *taskCount, const char* filePa
 
 /* Cắt ký tự xuống dòng và khoảng trắng đuôi */
 static void rstrip(char *s) {
-    if (!s) return;
     size_t n = strlen(s);
+    if (!s) return;
     while (n > 0 && (s[n-1] == '\n' || s[n-1] == '\r' || isspace((unsigned char)s[n-1]))) {
         s[--n] = '\0';
     }
@@ -390,9 +392,9 @@ static void csv_read_field(const char *line, size_t *pos, char *out, size_t outs
 
 /* Lấy số tiến độ từ chuỗi status; chịu các format "75", "75%", "  75  % " */
 static int parse_progress_safe(const char *s) {
+    long val = 0;
     if (!s) return 0;
     while (*s && !isdigit((unsigned char)*s)) s++;
-    long val = 0;
     while (*s && isdigit((unsigned char)*s)) {
         val = val * 10 + (*s - '0');
         s++;
@@ -404,13 +406,13 @@ static int parse_progress_safe(const char *s) {
 
 /* Kiểm tra ID dạng số (bỏ BOM, khoảng trắng đầu & cuối, cho phép dấu +) */
 static int is_numeric_id(const char *s) {
+    int seen = 0;
     if (!s) return 0;
     /* Bỏ BOM UTF-8 nếu có */
     if ((unsigned char)s[0] == 0xEF && (unsigned char)s[1] == 0xBB && (unsigned char)s[2] == 0xBF) s += 3;
     while (*s && isspace((unsigned char)*s)) s++;
     if (!*s) return 0;
     if (*s == '+') s++;
-    int seen = 0;
     while (*s && isdigit((unsigned char)*s)) { seen = 1; s++; }
     while (*s && isspace((unsigned char)*s)) s++;  /* mới thêm: bỏ khoảng trắng cuối */
     return seen && *s == '\0';
@@ -441,9 +443,9 @@ static int file_exists(const char *path) {
 
 static void ensure_parent_dir(const char *filePath) {
     char buf[PATH_MAX];
+    char *slash = strrchr(buf, '/');
     safe_copy(buf, sizeof buf, filePath);
     buf[sizeof(buf)-1] = '\0';
-    char *slash = strrchr(buf, '/');
     if (slash) {
         *slash = '\0';
         mkdir(buf, 0755); // idempotent: nếu đã tồn tại sẽ fail nhẹ, không sao
@@ -458,9 +460,9 @@ static void to_abs_path(const char *in, char *out, size_t outsz) {
     }
 }
 static void safe_copy(char *dst, size_t dstsz, const char *src) {
+    size_t i = 0;
     if (!dst || dstsz == 0) return;
     if (!src) { dst[0] = '\0'; return; }
-     size_t i = 0;
     /* copy tối đa dstsz-1 ký tự, dừng khi gặp '\0' */
     for (; i + 1 < dstsz && src[i] != '\0'; ++i) {
         dst[i] = src[i];
@@ -473,30 +475,39 @@ static void safe_copy(char *dst, size_t dstsz, const char *src) {
 /* Đọc task từ file CSV vào mảng tasks (không cấp phát động, chịu ô trống & lệch cột) */
 void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
 {
+    FILE *fp = fopen(filePath, "r");
+    enum { MAX_LINE = 4096 };
+    char line[MAX_LINE];
     if (!filePath || !tasks || !taskCount) return;
 
     *taskCount = 0;
-    FILE *fp = fopen(filePath, "r");
     if (!fp) {
         perror("Cannot open task file");
         return;
     }
 
-    enum { MAX_LINE = 4096 };
-    char line[MAX_LINE];
     //int line_no = 0;
 
     while (fgets(line, sizeof(line), fp)) {
         //line_no++;
-        rstrip(line);
-        if (line[0] == '\0') continue;                  /* bỏ dòng rỗng */
-
         /* Tách 4 field đầu: ID, Title, Detail, Status (các cột sau có hay không cũng không sao) */
         size_t pos = 0;
         char idbuf[32] = {0};
         char titlebuf[MAX_TITLE] = {0};
         char tmpbuf[128] = {0};                          /* để bỏ qua Detail */
         char statusbuf[32] = {0};
+
+        /* ID: nếu rỗng/không hợp lệ -> gán tuần tự; nếu có -> dùng số trong file */
+        int id = (idbuf[0] != '\0') ? atoi(idbuf) : (*taskCount + 1);
+
+        /* Title: có thể rỗng -> để "" (an toàn) */
+        /* Progress: chịu "x%", " x  %" hoặc rỗng -> mặc định 0..100 */
+        int progress = parse_progress_safe(statusbuf);
+
+        rstrip(line);
+
+
+        if (line[0] == '\0') continue;                  /* bỏ dòng rỗng */
 
         csv_read_field(line, &pos, idbuf, sizeof(idbuf));
         csv_read_field(line, &pos, titlebuf, sizeof(titlebuf));
@@ -513,13 +524,7 @@ void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
             break;
         }
 
-        /* ID: nếu rỗng/không hợp lệ -> gán tuần tự; nếu có -> dùng số trong file */
-        int id = (idbuf[0] != '\0') ? atoi(idbuf) : (*taskCount + 1);
         if (id <= 0) id = *taskCount + 1;
-
-        /* Title: có thể rỗng -> để "" (an toàn) */
-        /* Progress: chịu "x%", " x  %" hoặc rỗng -> mặc định 0..100 */
-        int progress = parse_progress_safe(statusbuf);
 
         /* Ghi vào mảng tĩnh */
         tasks[*taskCount].id = id;
@@ -540,6 +545,7 @@ void outputWriteFile(const char *filePath, const Task tasks[], int taskCount)
 {
     FILE *fp;
     int i;
+    char absfile[PATH_MAX];
 
     if (!filePath || !tasks) return;
 
@@ -590,7 +596,6 @@ void outputWriteFile(const char *filePath, const Task tasks[], int taskCount)
     fclose(fp);
 
     /* Log: đã lưu vào file nào (đường dẫn tuyệt đối) */
-    char absfile[PATH_MAX];
     to_abs_path(filePath, absfile, sizeof(absfile));
     printf("Saved %d task(s) to: %s\n", taskCount, absfile);
 }
