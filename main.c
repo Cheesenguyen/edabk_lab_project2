@@ -74,7 +74,6 @@ int main(void)
     /* 2) Đọc dữ liệu */
     inputReadFile(file, tasks, &taskCount);
 
-    /* 3) Log đường dẫn tuyệt đối + trạng thái */
     char absfile[PATH_MAX];
     to_abs_path(file, absfile, sizeof(absfile));
     if (created) {
@@ -589,4 +588,9 @@ void outputWriteFile(const char *filePath, const Task tasks[], int taskCount)
     }
 
     fclose(fp);
+
+    /* Log: đã lưu vào file nào (đường dẫn tuyệt đối) */
+    char absfile[PATH_MAX];
+    to_abs_path(filePath, absfile, sizeof(absfile));
+    printf("Saved %d task(s) to: %s\n", taskCount, absfile);
 }
