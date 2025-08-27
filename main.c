@@ -1,3 +1,5 @@
+#include <ctype.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -295,84 +297,148 @@ void systemResponse(int choice, Task tasks[], int *taskCount, const char* filePa
     }
 }
 
+/* Cắt ký tự xuống dòng và khoảng trắng đuôi */
+static void rstrip(char *s) {
+    if (!s) return;
+    size_t n = strlen(s);
+    while (n > 0 && (s[n-1] == '\n' || s[n-1] == '\r' || isspace((unsigned char)s[n-1]))) {
+        s[--n] = '\0';
+    }
+}
+
+/* Đọc 1 field CSV (hỗ trợ dấu ngoặc kép & dấu phẩy trong dữ liệu), không cấp phát động */
+static void csv_read_field(const char *line, size_t *pos, char *out, size_t outsz) {
+    size_t i = *pos, o = 0;
+    int quoted = 0;
+
+    if (!line || !out || outsz == 0) return;
+    out[0] = '\0';
+
+    if (line[i] == '"') { quoted = 1; i++; }
+
+    while (line[i] != '\0') {
+        char c = line[i];
+
+        if (quoted) {
+            if (c == '"') {
+                if (line[i+1] == '"') {                 /* "" -> một dấu " trong dữ liệu */
+                    if (o + 1 < outsz) out[o++] = '"';
+                    i += 2;
+                } else {                                 /* kết thúc field */
+                    i++;
+                    if (line[i] == ',') i++;             /* bỏ dấu phẩy nếu có */
+                    break;
+                }
+            } else {
+                if (o + 1 < outsz) out[o++] = c;
+                i++;
+            }
+        } else {
+            if (c == ',') { i++; break; }               /* hết field thường */
+            if (o + 1 < outsz) out[o++] = c;
+            i++;
+        }
+    }
+
+    out[o] = '\0';
+    *pos = i;
+}
+
+/* Lấy số tiến độ từ chuỗi status; chịu các format "75", "75%", "  75  % " */
+static int parse_progress_safe(const char *s) {
+    if (!s) return 0;
+    while (*s && !isdigit((unsigned char)*s)) s++;
+    long val = 0;
+    while (*s && isdigit((unsigned char)*s)) {
+        val = val * 10 + (*s - '0');
+        s++;
+    }
+    if (val < 0) val = 0;
+    if (val > 100) val = 100;
+    return (int)val;
+}
+
+/* Kiểm tra ID dạng số (bỏ BOM, khoảng trắng đầu & cuối, cho phép dấu +) */
+static int is_numeric_id(const char *s) {
+    if (!s) return 0;
+    /* Bỏ BOM UTF-8 nếu có */
+    if ((unsigned char)s[0] == 0xEF && (unsigned char)s[1] == 0xBB && (unsigned char)s[2] == 0xBF) s += 3;
+    while (*s && isspace((unsigned char)*s)) s++;
+    if (!*s) return 0;
+    if (*s == '+') s++;
+    int seen = 0;
+    while (*s && isdigit((unsigned char)*s)) { seen = 1; s++; }
+    while (*s && isspace((unsigned char)*s)) s++;  /* mới thêm: bỏ khoảng trắng cuối */
+    return seen && *s == '\0';
+}
+
+
 /* ---- FILE I/O ---- */
+
+/* Đọc task từ file CSV vào mảng tasks (không cấp phát động, chịu ô trống & lệch cột) */
 void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
 {
     if (!filePath || !tasks || !taskCount) return;
 
     *taskCount = 0;
     FILE *fp = fopen(filePath, "r");
-    if (!fp)
-    {
+    if (!fp) {
         perror("Cannot open task file");
         return;
     }
 
-    char line[4096];
-    int lineNum = 0;
+    enum { MAX_LINE = 4096 };
+    char line[MAX_LINE];
+    int line_no = 0;
 
-    while (fgets(line, sizeof(line), fp))
-    {
-        lineNum++;
-        if (lineNum <= 2) continue;               /* bỏ header 2 dòng */
+    while (fgets(line, sizeof(line), fp)) {
+        line_no++;
+        rstrip(line);
+        if (line[0] == '\0') continue;                  /* bỏ dòng rỗng */
 
-        line[strcspn(line, "\r\n")] = '\0';
+        /* Tách 4 field đầu: ID, Title, Detail, Status (các cột sau có hay không cũng không sao) */
+        size_t pos = 0;
+        char idbuf[32] = {0};
+        char titlebuf[MAX_TITLE] = {0};
+        char tmpbuf[128] = {0};                          /* để bỏ qua Detail */
+        char statusbuf[32] = {0};
 
-        /* Parse: ID,Title,Detail,Status,Priority,Deadline */
-        char *p = line;
-        char *comma = strchr(p, ',');
-        if (!comma) continue;
-        *comma = '\0';
-        int id = atoi(p);
-        p = comma + 1;
+        csv_read_field(line, &pos, idbuf, sizeof(idbuf));
+        csv_read_field(line, &pos, titlebuf, sizeof(titlebuf));
+        csv_read_field(line, &pos, tmpbuf, sizeof(tmpbuf));       /* Detail - có thể rỗng */
+        csv_read_field(line, &pos, statusbuf, sizeof(statusbuf)); /* Status - có thể rỗng */
 
-        char title[MAX_TITLE] = "";
-        if (*p == '"') {
-            p++;
-            char *endQuote = strchr(p, '"');
-            if (!endQuote) continue;
-            *endQuote = '\0';
-            strncpy(title, p, MAX_TITLE - 1);
-            title[MAX_TITLE - 1] = '\0';
-            p = endQuote + 2; /* bỏ dấu ", */
-        } else {
-            char *nextComma = strchr(p, ',');
-            if (!nextComma) continue;
-            *nextComma = '\0';
-            strncpy(title, p, MAX_TITLE - 1);
-            title[MAX_TITLE - 1] = '\0';
-            p = nextComma + 1;
+        /* BỎ HEADER: nếu field đầu không phải số -> coi là header/miêu tả, bỏ qua */
+        if (!is_numeric_id(idbuf)) {
+            continue;
         }
 
-        /* Bỏ Detail và Priority (2 cột) rồi lấy Status */
-        for (int i = 0; i < 2; ++i) {
-            comma = strchr(p, ',');
-            if (!comma) break;
-            p = comma + 1;
+        /* Không tràn mảng tĩnh */
+        if (*taskCount >= MAX_TASK) {
+            break;
         }
 
-        char status[16];
-        strncpy(status, p, sizeof(status) - 1);
-        status[sizeof(status) - 1] = '\0';
+        /* ID: nếu rỗng/không hợp lệ -> gán tuần tự; nếu có -> dùng số trong file */
+        int id = (idbuf[0] != '\0') ? atoi(idbuf) : (*taskCount + 1);
+        if (id <= 0) id = *taskCount + 1;
 
-        size_t n = strlen(status);
-        if (n > 0 && status[n - 1] == '%') status[n - 1] = '\0';
+        /* Title: có thể rỗng -> để "" (an toàn) */
+        /* Progress: chịu "x%", " x  %" hoặc rỗng -> mặc định 0..100 */
+        int progress = parse_progress_safe(statusbuf);
 
-        int progress = atoi(status);
-        if (progress < 0 || progress > 100) progress = 0;
+        /* Ghi vào mảng tĩnh */
+        tasks[*taskCount].id = id;
+        strncpy(tasks[*taskCount].list, titlebuf, MAX_TITLE - 1);
+        tasks[*taskCount].list[MAX_TITLE - 1] = '\0';
+        tasks[*taskCount].progress = progress;
 
-        if (*taskCount < MAX_TASK)
-        {
-            tasks[*taskCount].id = id;
-            strncpy(tasks[*taskCount].list, title, MAX_TITLE - 1);
-            tasks[*taskCount].list[MAX_TITLE - 1] = '\0';
-            tasks[*taskCount].progress = progress;
-            (*taskCount)++;
-        }
+        (*taskCount)++;
     }
 
     fclose(fp);
+    /* Không re-index ID để giữ đúng ID từ file; các thao tác UI vẫn dùng index 1..N như trước */
 }
+
 
 void outputWriteFile(const char *filePath, const Task tasks[], int taskCount)
 {
