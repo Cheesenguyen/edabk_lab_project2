@@ -186,7 +186,7 @@ int systemDeleteTask(Task tasks[], int *taskCount, int index1based)
         tasks[i] = tasks[i + 1]; /* dịch cả id/list/progress cùng nhau */
     }
     (*taskCount)--;
-    return 0;
+    return 1;
 }
 
 /* ---- FEATURE: EDIT ---- */
@@ -498,21 +498,20 @@ void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
         char tmpbuf[128] = {0};                          /* để bỏ qua Detail */
         char statusbuf[32] = {0};
 
-        /* ID: nếu rỗng/không hợp lệ -> gán tuần tự; nếu có -> dùng số trong file */
-        int id = (idbuf[0] != '\0') ? atoi(idbuf) : (*taskCount + 1);
-        
-        /* Title: có thể rỗng -> để "" (an toàn) */
-        /* Progress: chịu "x%", " x  %" hoặc rỗng -> mặc định 0..100 */
-        int progress = parse_progress_safe(statusbuf);
         rstrip(line);
-
-
         if (line[0] == '\0') continue;                  /* bỏ dòng rỗng */
 
         csv_read_field(line, &pos, idbuf, sizeof(idbuf));
         csv_read_field(line, &pos, titlebuf, sizeof(titlebuf));
         csv_read_field(line, &pos, tmpbuf, sizeof(tmpbuf));       /* Detail - có thể rỗng */
         csv_read_field(line, &pos, statusbuf, sizeof(statusbuf)); /* Status - có thể rỗng */
+
+        /* ID: nếu rỗng/không hợp lệ -> gán tuần tự; nếu có -> dùng số trong file */
+        int id = (idbuf[0] != '\0') ? atoi(idbuf) : (*taskCount + 1);
+        
+        /* Title: có thể rỗng -> để "" (an toàn) */
+        /* Progress: chịu "x%", " x  %" hoặc rỗng -> mặc định 0..100 */
+        int progress = parse_progress_safe(statusbuf);
 
         /* BỎ HEADER: nếu field đầu không phải số -> coi là header/miêu tả, bỏ qua */
         if (!is_numeric_id(idbuf)) {
