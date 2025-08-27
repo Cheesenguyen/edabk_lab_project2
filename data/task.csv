@@ -1,4 +1,4 @@
 ID,Title,Detail,Status,Priority,Deadline
 "Unique task identifier","Brief task name","Task description","Completion percentage","Priority level","Task due date"
-1,learn digital ,Description,3%,3,01/01/2025
-2,hehe,Description,12%,3,01/01/2025
+1,"learn digital ","",3%,"",""
+2,"hehe","",12%,"",""

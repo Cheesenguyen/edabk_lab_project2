@@ -3,10 +3,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <limits.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #define MAX_TITLE 50
-#define MAX_TASK  10
+#define MAX_TASK  100
 #define LAST_OPTION 5
+
+#include <limits.h>
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 /* Mỗi Task gói 3 thuộc tính với TÊN GIỮ NGUYÊN: id, list (tiêu đề), progress */
 typedef struct {
@@ -33,6 +43,10 @@ void systemResponse(int choice, Task tasks[], int *taskCount, const char* filePa
 
 void inputReadFile(const char *filePath, Task tasks[], int *taskCount);
 void outputWriteFile(const char *filePath, const Task tasks[], int taskCount);
+static int  file_exists(const char *path);
+static void ensure_parent_dir(const char *filePath);
+static void to_abs_path(const char *in, char *out, size_t outsz);
+static void safe_copy(char *dst, size_t dstsz, const char *src);
 
 /* Internal helpers (static) */
 static void flush_line(void);  /* <-- cần có vì được gọi trước khi định nghĩa */
@@ -46,14 +60,31 @@ static void csv_write_quoted(FILE *fp, const char *s);
 int main(void)
 {
     Task tasks[MAX_TASK];
-    const char* file = "./data/task.csv";
+    const char *file = "./data/task.csv";
     int taskCount = 0;
 
-    inputReadFile(file, tasks, &taskCount);
-    printf("Loaded %d tasks from file.\n", taskCount);
+    /* 1) Nếu chưa có file -> tạo mới file trống với 2 dòng mô tả */
+    int created = 0;
+    if (!file_exists(file)) {
+        ensure_parent_dir(file);          /* bảo đảm có thư mục data/ */
+        outputWriteFile(file, tasks, 0);  /* ghi header 2 dòng */
+        created = 1;
+    }
 
-    while (1)
-    {
+    /* 2) Đọc dữ liệu */
+    inputReadFile(file, tasks, &taskCount);
+
+    /* 3) Log đường dẫn tuyệt đối + trạng thái */
+    char absfile[PATH_MAX];
+    to_abs_path(file, absfile, sizeof(absfile));
+    if (created) {
+        printf("Created new data file: %s\n", absfile);
+    } else {
+        printf("Loaded %d tasks from: %s\n", taskCount, absfile);
+    }
+
+    /* 4) Vòng lặp menu */
+    while (1) {
         int userOption;
         printf("\nTask Manager\n");
         printf("1. Add Task\n");
@@ -68,6 +99,7 @@ int main(void)
         outputWriteFile(file, tasks, taskCount);
     }
 }
+
 
 /* ---- INPUT ---- */
 int inputGetOption(void)
@@ -102,7 +134,7 @@ int inputGetProgress(void)
     while (1)
     {
         printf("Progress (1-100): ");
-        if (scanf("%d", &taskProgress) == 1 && taskProgress >= 1 && taskProgress <= 100)
+        if (scanf("%d", &taskProgress) == 1 && taskProgress >= 0 && taskProgress <= 100)
             return taskProgress;
         printf("Invalid progress. Please try again!\n");
         flush_line();
@@ -120,7 +152,10 @@ void inputNewTask(Task tasks[], int *taskCount)
 
     printf("Enter task title: ");
     flush_line();
-    fgets(tasks[*taskCount].list, MAX_TITLE, stdin);
+    if (!fgets(tasks[*taskCount].list, MAX_TITLE, stdin)) {
+    fprintf(stderr, "Input error (title).\n");
+    return;  // hoặc xử lý phù hợp luồng của bạn
+    }
     tasks[*taskCount].list[strcspn(tasks[*taskCount].list, "\n")] = '\0';
 
     tasks[*taskCount].id       = *taskCount + 1;     /* giữ cách đánh số như code cũ */
@@ -150,12 +185,7 @@ int systemDeleteTask(Task tasks[], int *taskCount, int index1based)
         tasks[i] = tasks[i + 1]; /* dịch cả id/list/progress cùng nhau */
     }
     (*taskCount)--;
-
-    /* Cập nhật lại id tuần tự (giống hành vi cũ: id = vị trí + 1) */
-    for (int i = 0; i < *taskCount; ++i)
-        tasks[i].id = i + 1;
-
-    return 1;
+    return 0;
 }
 
 /* ---- FEATURE: EDIT ---- */
@@ -179,17 +209,23 @@ void systemEditTask(const char *filePath, Task tasks[], int *taskCount)
     /* nhập tiêu đề mới (Enter = giữ nguyên) */
     printf("New title (Enter to skip): ");
     flush_line(); /* flush */
-    fgets(newTitle, MAX_TITLE, stdin);
+    if (!fgets(newTitle, MAX_TITLE, stdin)) {
+    fprintf(stderr, "Input error (new title).\n");
+    return;
+    }
     if (newTitle[0] != '\n')
     {
         newTitle[strcspn(newTitle, "\n")] = '\0';
-        strncpy(tasks[idx].list, newTitle, MAX_TITLE - 1);
+        safe_copy(tasks[idx].list, sizeof tasks[idx].list, newTitle);
         tasks[idx].list[MAX_TITLE - 1] = '\0';
     }
 
     /* nhập tiến độ mới (Enter = giữ nguyên) */
     printf("New progress (Enter to skip): ");
-    fgets(buf, sizeof(buf), stdin);
+    if (!fgets(buf, sizeof(buf), stdin)) {
+    fprintf(stderr, "Input error (progress).\n");
+    return;
+    }
     if (buf[0] != '\n')
     {
         int p = atoi(buf);
@@ -240,11 +276,6 @@ void systemSortListOfTask(Task tasks[], int taskCount)
             tasks[j] = tmp;
         }
     }
-
-    /* Sau khi sắp xếp, cập nhật lại id tuần tự giống hành vi cũ */
-    for (int i = 0; i < taskCount; ++i)
-        tasks[i].id = i + 1;
-
     printf("Tasks sorted by progress.\n");
     outputViewTasks(tasks, taskCount);
 }
@@ -262,7 +293,10 @@ void systemSearchTask(const Task tasks[], int taskCount)
 
     printf("Enter task title to search: ");
     flush_line(); /* flush */
-    fgets(keyword, MAX_TITLE, stdin);
+    if (!fgets(keyword, MAX_TITLE, stdin)) {
+    fprintf(stderr, "Input error (keyword).\n");
+    return;
+    }
     keyword[strcspn(keyword, "\n")] = '\0';
 
     printf("Search results:\n");
@@ -400,6 +434,40 @@ static void flush_line(void) {
     int ch;
     while ((ch = getchar()) != '\n' && ch != EOF) { /* no-op */ }
 }
+static int file_exists(const char *path) {
+    FILE *f = fopen(path, "r");
+    if (f) { fclose(f); return 1; }
+    return 0;
+}
+
+static void ensure_parent_dir(const char *filePath) {
+    char buf[PATH_MAX];
+    safe_copy(buf, sizeof buf, filePath);
+    buf[sizeof(buf)-1] = '\0';
+    char *slash = strrchr(buf, '/');
+    if (slash) {
+        *slash = '\0';
+        mkdir(buf, 0755); // idempotent: nếu đã tồn tại sẽ fail nhẹ, không sao
+    }
+}
+
+static void to_abs_path(const char *in, char *out, size_t outsz) {
+    if (!realpath(in, out)) {
+        // realpath thất bại khi file chưa tồn tại → ghi lại đường dẫn gốc
+        safe_copy(out, outsz, in);
+        out[outsz-1] = '\0';
+    }
+}
+static void safe_copy(char *dst, size_t dstsz, const char *src) {
+    if (!dst || dstsz == 0) return;
+    if (!src) { dst[0] = '\0'; return; }
+     size_t i = 0;
+    /* copy tối đa dstsz-1 ký tự, dừng khi gặp '\0' */
+    for (; i + 1 < dstsz && src[i] != '\0'; ++i) {
+        dst[i] = src[i];
+    }
+    dst[i] = '\0';
+}
 
 /* ---- FILE I/O ---- */
 
@@ -456,7 +524,7 @@ void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
 
         /* Ghi vào mảng tĩnh */
         tasks[*taskCount].id = id;
-        strncpy(tasks[*taskCount].list, titlebuf, MAX_TITLE - 1);
+        safe_copy(tasks[*taskCount].list, sizeof tasks[*taskCount].list, titlebuf);
         tasks[*taskCount].list[MAX_TITLE - 1] = '\0';
         tasks[*taskCount].progress = progress;
 
