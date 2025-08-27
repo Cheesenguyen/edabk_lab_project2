@@ -1,5 +1,5 @@
-#define _XOPEN_SOURCE 700 
 #define _POSIX_C_SOURCE 200809L  
+#define _XOPEN_SOURCE 700  
 
 #include <ctype.h>
 #include <stddef.h>
@@ -443,9 +443,10 @@ static int file_exists(const char *path) {
 
 static void ensure_parent_dir(const char *filePath) {
     char buf[PATH_MAX];
-    char *slash = strrchr(buf, '/');
+    char *slash;
     safe_copy(buf, sizeof buf, filePath);
     buf[sizeof(buf)-1] = '\0';
+    slash = strrchr(buf, '/');
     if (slash) {
         *slash = '\0';
         mkdir(buf, 0755); // idempotent: nếu đã tồn tại sẽ fail nhẹ, không sao
@@ -499,11 +500,10 @@ void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
 
         /* ID: nếu rỗng/không hợp lệ -> gán tuần tự; nếu có -> dùng số trong file */
         int id = (idbuf[0] != '\0') ? atoi(idbuf) : (*taskCount + 1);
-
+        
         /* Title: có thể rỗng -> để "" (an toàn) */
         /* Progress: chịu "x%", " x  %" hoặc rỗng -> mặc định 0..100 */
         int progress = parse_progress_safe(statusbuf);
-
         rstrip(line);
 
 
@@ -525,6 +525,7 @@ void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
         }
 
         if (id <= 0) id = *taskCount + 1;
+
 
         /* Ghi vào mảng tĩnh */
         tasks[*taskCount].id = id;
