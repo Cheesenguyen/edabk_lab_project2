@@ -60,13 +60,13 @@ static void csv_write_quoted(FILE *fp, const char *s);
 int main(void)
 {
     Task tasks[MAX_TASK];
-    const char *file = "./data/task.csv";
+    const char *file = "./docs/task.csv";
     int taskCount = 0;
 
     /* 1) Nếu chưa có file -> tạo mới file trống với 2 dòng mô tả */
     int created = 0;
     if (!file_exists(file)) {
-        ensure_parent_dir(file);          /* bảo đảm có thư mục data/ */
+        ensure_parent_dir(file);          /* bảo đảm có thư mục docs/ */
         outputWriteFile(file, tasks, 0);  /* ghi header 2 dòng */
         created = 1;
     }
