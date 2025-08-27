@@ -16,8 +16,11 @@ typedef struct {
 } Task;
 
 /* Khai báo hàm */
+/* ======== Function Declarations ======== */
+
+/* Public API */
 int  inputGetOption(void);
-int  inputGetID(int listLength);
+int  inputGetID(int totalTasks);
 int  inputGetProgress(void);
 
 void inputNewTask(Task tasks[], int *taskCount);
@@ -28,8 +31,16 @@ void systemSortListOfTask(Task tasks[], int taskCount);
 void systemSearchTask(const Task tasks[], int taskCount);
 void systemResponse(int choice, Task tasks[], int *taskCount, const char* filePath);
 
-void inputReadFile(const char* filePath, Task tasks[], int *taskCount);
+void inputReadFile(const char *filePath, Task tasks[], int *taskCount);
 void outputWriteFile(const char *filePath, const Task tasks[], int taskCount);
+
+/* Internal helpers (static) */
+static void flush_line(void);  /* <-- cần có vì được gọi trước khi định nghĩa */
+static void rstrip(char *s);
+static void csv_read_field(const char *line, size_t *pos, char *out, size_t outsz);
+static int  parse_progress_safe(const char *s);
+static int  is_numeric_id(const char *s);
+static void csv_write_quoted(FILE *fp, const char *s);
 
 /* ---- MAIN ---- */
 int main(void)
@@ -68,7 +79,7 @@ int inputGetOption(void)
         if (scanf("%d", &userOption) == 1 && userOption >= 0 && userOption <= LAST_OPTION)
             return userOption;
         printf("Invalid option. Please try again!\n");
-        while (getchar() != '\n');
+        flush_line();
     }
 }
 
@@ -81,7 +92,7 @@ int inputGetID(int totalTasks)
         if (scanf("%d", &taskIdx) == 1 && taskIdx >= 1 && taskIdx <= totalTasks)
             return taskIdx;
         printf("Invalid ID. Please try again!\n");
-        while (getchar() != '\n');
+        flush_line();
     }
 }
 
@@ -94,7 +105,7 @@ int inputGetProgress(void)
         if (scanf("%d", &taskProgress) == 1 && taskProgress >= 1 && taskProgress <= 100)
             return taskProgress;
         printf("Invalid progress. Please try again!\n");
-        while (getchar() != '\n');
+        flush_line();
     }
 }
 
@@ -108,7 +119,7 @@ void inputNewTask(Task tasks[], int *taskCount)
     }
 
     printf("Enter task title: ");
-    while (getchar() != '\n'); /* flush */
+    flush_line();
     fgets(tasks[*taskCount].list, MAX_TITLE, stdin);
     tasks[*taskCount].list[strcspn(tasks[*taskCount].list, "\n")] = '\0';
 
@@ -167,7 +178,7 @@ void systemEditTask(const char *filePath, Task tasks[], int *taskCount)
 
     /* nhập tiêu đề mới (Enter = giữ nguyên) */
     printf("New title (Enter to skip): ");
-    while (getchar() != '\n'); /* flush */
+    flush_line(); /* flush */
     fgets(newTitle, MAX_TITLE, stdin);
     if (newTitle[0] != '\n')
     {
@@ -250,7 +261,7 @@ void systemSearchTask(const Task tasks[], int taskCount)
     }
 
     printf("Enter task title to search: ");
-    while (getchar() != '\n'); /* flush */
+    flush_line(); /* flush */
     fgets(keyword, MAX_TITLE, stdin);
     keyword[strcspn(keyword, "\n")] = '\0';
 
@@ -371,7 +382,24 @@ static int is_numeric_id(const char *s) {
     while (*s && isspace((unsigned char)*s)) s++;  /* mới thêm: bỏ khoảng trắng cuối */
     return seen && *s == '\0';
 }
-
+/* Ghi 1 field CSV luôn đặt trong dấu ngoặc kép, escape " thành "" */
+static void csv_write_quoted(FILE *fp, const char *s) {
+    fputc('"', fp);
+    if (s) {
+        const char *p = s;
+        while (*p) {
+            if (*p == '"') { fputc('"', fp); fputc('"', fp); }  /* "" */
+            else            fputc(*p, fp);
+            p++;
+        }
+    }
+    fputc('"', fp);
+}
+/* Flush tới hết dòng hoặc EOF (an toàn hơn while(getchar()!='\n')) */
+static void flush_line(void) {
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF) { /* no-op */ }
+}
 
 /* ---- FILE I/O ---- */
 
@@ -389,10 +417,10 @@ void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
 
     enum { MAX_LINE = 4096 };
     char line[MAX_LINE];
-    int line_no = 0;
+    //int line_no = 0;
 
     while (fgets(line, sizeof(line), fp)) {
-        line_no++;
+        //line_no++;
         rstrip(line);
         if (line[0] == '\0') continue;                  /* bỏ dòng rỗng */
 
@@ -440,27 +468,56 @@ void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
 }
 
 
+/* Ghi tasks ra CSV đầy đủ 6 cột: ID,Title,Detail,Status,Priority,Deadline */
 void outputWriteFile(const char *filePath, const Task tasks[], int taskCount)
 {
+    FILE *fp;
+    int i;
+
     if (!filePath || !tasks) return;
 
-    FILE *fp = fopen(filePath, "w");
-    if (!fp)
-    {
-        perror("Cannot open task file");
+    fp = fopen(filePath, "w");
+    if (!fp) {
+        perror("Cannot open task file for write");
         return;
     }
 
-    /* Header 2 dòng như cũ */
-    fprintf(fp, "ID,Title,Detail,Status,Priority,Deadline\n");
-    fprintf(fp, "\"Unique task identifier\",\"Brief task name\",\"Task description\",\"Completion percentage\",\"Priority level\",\"Task due date\"\n");
+    /* Header 2 dòng (đọc file sẽ tự bỏ qua vì cột 1 không phải số) */
+    fputs("ID,Title,Detail,Status,Priority,Deadline\n", fp);
+    fputs("\"Unique task identifier\",\"Brief task name\",\"Task description\",\"Completion percentage\",\"Priority level\",\"Task due date\"\n", fp);
 
-    for (int i = 0; i < taskCount && i < MAX_TASK; ++i)
-    {
-        fprintf(fp, "%d,%s,Description,%d%%,3,01/01/2025\n",
-                tasks[i].id,
-                tasks[i].list,
-                tasks[i].progress);
+    /* Ghi từng dòng. Luôn đủ 6 trường, kể cả trống */
+    for (i = 0; i < taskCount && i < MAX_TASK; ++i) {
+        int id = tasks[i].id > 0 ? tasks[i].id : (i + 1);
+        int p  = tasks[i].progress;
+        char statusbuf[16];
+
+        if (p < 0)   p = 0;
+        if (p > 100) p = 100;
+
+        /* ID (không quote) */
+        fprintf(fp, "%d,", id);
+
+        /* Title */
+        csv_write_quoted(fp, tasks[i].list);
+        fputc(',', fp);
+
+        /* Detail: hiện không quản lý -> để trống nhưng vẫn có cột */
+        csv_write_quoted(fp, "");
+        fputc(',', fp);
+
+        /* Status: dạng N% (không quote để giữ kiểu trước đây; parser vẫn đọc OK) */
+        snprintf(statusbuf, sizeof(statusbuf), "%d%%", p);
+        fputs(statusbuf, fp);
+        fputc(',', fp);
+
+        /* Priority (trống) */
+        csv_write_quoted(fp, "");
+        fputc(',', fp);
+
+        /* Deadline (trống) */
+        csv_write_quoted(fp, "");
+        fputc('\n', fp);
     }
 
     fclose(fp);
