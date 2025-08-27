@@ -1,4 +1,2 @@
 ID,Title,Detail,Status,Priority,Deadline
 "Unique task identifier","Brief task name","Task description","Completion percentage","Priority level","Task due date"
-1,"learn digital ","",3%,"",""
-2,"hehe","",12%,"",""
