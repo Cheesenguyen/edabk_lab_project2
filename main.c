@@ -497,6 +497,7 @@ void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
         char titlebuf[MAX_TITLE] = {0};
         char tmpbuf[128] = {0};                          /* để bỏ qua Detail */
         char statusbuf[32] = {0};
+        int id, progress;
 
         rstrip(line);
         if (line[0] == '\0') continue;                  /* bỏ dòng rỗng */
@@ -507,11 +508,11 @@ void inputReadFile(const char *filePath, Task tasks[], int *taskCount)
         csv_read_field(line, &pos, statusbuf, sizeof(statusbuf)); /* Status - có thể rỗng */
 
         /* ID: nếu rỗng/không hợp lệ -> gán tuần tự; nếu có -> dùng số trong file */
-        int id = (idbuf[0] != '\0') ? atoi(idbuf) : (*taskCount + 1);
+        id = (idbuf[0] != '\0') ? atoi(idbuf) : (*taskCount + 1);
         
         /* Title: có thể rỗng -> để "" (an toàn) */
         /* Progress: chịu "x%", " x  %" hoặc rỗng -> mặc định 0..100 */
-        int progress = parse_progress_safe(statusbuf);
+        progress = parse_progress_safe(statusbuf);
 
         /* BỎ HEADER: nếu field đầu không phải số -> coi là header/miêu tả, bỏ qua */
         if (!is_numeric_id(idbuf)) {
