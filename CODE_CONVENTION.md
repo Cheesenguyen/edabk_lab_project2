@@ -177,14 +177,14 @@ static void normalizeInput(char *str) {
 - Align consecutive variable declarations.
 - Align long expressions in operations.
 - Align end-of-line comments.
-- Do not align consecutive macros.
+- Align consecutive macros.
 - Left-align escape lines in strings.
-- Multi-line parameters/arguments align after ( if present.
+- Keep parameters/arguments on a single line and align after the opening parenthesis ( until you approach the line-length limit (80 characters). If you must wrap, break after a comma, then align the continued lines with the first character after the opening ( on the first line.
 
 ### D. Braces & Line Breaks
 - { always on its own line (Allman style) — per GNU/GNOME standard.
 - Use {} for all if, for, while, even single-line bodies.
-- Do not put functions, loops, conditions, or if blocks on the same line if too short.
+- Do not put functions, loops, conditions, or if blocks on the same line if too long.
 - Break line before binary operators like +, -, *, ...
 - Break line before ?: operator for readability.
 - Do not put return type on a separate line.
