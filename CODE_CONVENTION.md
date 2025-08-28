@@ -179,7 +179,7 @@ static void normalizeInput(char *str) {
 - Align end-of-line comments.
 - Align consecutive macros.
 - Left-align escape lines in strings.
-- Keep parameters/arguments on a single line and align after the opening parenthesis ( until you approach the line-length limit (80 characters). If you must wrap, break after a comma, then align the continued lines with the first character after the opening ( on the first line.
+- Multi-line parameters/arguments align after ( if present.
 
 ### D. Braces & Line Breaks
 - { always on its own line (Allman style) — per GNU/GNOME standard.
