@@ -55,7 +55,7 @@ Comments are essential for helping readers understand the purpose and behavior o
 ### 2.1 Function Header Comments
 
 - Each function should have a comment describing its main purpose.
-- Use multi-line comment style `/** ... */` for longer descriptions and `//` for short one. Do not use `/** ... */` for short comments.
+- Use multi-line comment style `/** ... */` for longer descriptions and `//` for short one. Do not use `/** ... */` for short comments except for describe the function.
 
 #### Example:
 

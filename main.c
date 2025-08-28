@@ -53,7 +53,7 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount);
 static void flushLine(void);
 static void stripRight(char* s);
 static void
-            csvReadField(const char* line, size_t* pos, char* out, size_t outSize);
+csvReadField(const char* line, size_t* pos, char* out, size_t outSize);
 static int  parseProgressSafe(const char* s);
 static int  isNumericId(const char* s);
 static void csvWriteQuoted(FILE* fp, const char* s);
@@ -130,10 +130,10 @@ int inputGetProgress(void)
     }
 }
 
-/**
- * inputNewTask - Append a new task to the array.
- * @tasks:      array of Task.
- * @taskCount:  in/out count of tasks.
+/*
+ + inputNewTask - Append a new task to the array.
+ + tasks:      array of Task.
+ + taskCount:  in/out count of tasks.
  */
 void inputNewTask(Task tasks[], int* taskCount)
 {
@@ -161,9 +161,9 @@ void inputNewTask(Task tasks[], int* taskCount)
     printf("Task added successfully!\n");
 }
 
-/**
- * systemDeleteTask - Delete a task by 1-based index.
- * Returns: 1 on success, 0 on failure.
+/*
+ + systemDeleteTask - Delete a task by 1-based index.
+ + Returns: 1 on success, 0 on failure.
  */
 int systemDeleteTask(Task tasks[], int* taskCount, int index1Based)
 {
@@ -191,9 +191,9 @@ int systemDeleteTask(Task tasks[], int* taskCount, int index1Based)
     return 1;
 }
 
-/**
- * systemEditTask - Edit a task (title and/or progress).
- * Reads the file first to keep previous behavior.
+/*
+ + systemEditTask - Edit a task (title and/or progress).
+ + Reads the file first to keep previous behavior.
  */
 void systemEditTask(const char* filePath, Task tasks[], int* taskCount)
 {
@@ -258,8 +258,8 @@ void systemEditTask(const char* filePath, Task tasks[], int* taskCount)
     printf("Task updated successfully!\n");
 }
 
-/**
- * outputViewTasks - Print all tasks.
+/*
+ outputViewTasks - Print all tasks.
  */
 void outputViewTasks(const Task tasks[], int taskCount)
 {
@@ -280,8 +280,8 @@ void outputViewTasks(const Task tasks[], int taskCount)
     }
 }
 
-/**
- * systemSortListOfTask - Sort tasks by progress (ascending) using Shell sort.
+/*
+ systemSortListOfTask - Sort tasks by progress (ascending) using Shell sort.
  */
 void systemSortListOfTask(Task tasks[], int taskCount)
 {
@@ -314,8 +314,8 @@ void systemSortListOfTask(Task tasks[], int taskCount)
     outputViewTasks(tasks, taskCount);
 }
 
-/**
- * systemSearchTask - Search tasks by title substring.
+/*
+ systemSearchTask - Search tasks by title substring.
  */
 void systemSearchTask(const Task tasks[], int taskCount)
 {
@@ -356,8 +356,8 @@ void systemSearchTask(const Task tasks[], int taskCount)
     }
 }
 
-/**
- * systemResponse - Dispatch a menu choice.
+/*
+ systemResponse - Dispatch a menu choice.
  */
 void systemResponse(int         choice,
                     Task        tasks[],
@@ -409,10 +409,10 @@ void systemResponse(int         choice,
     }
 }
 
-/* ----- Helpers ----- */
+// Helpers
 
-/**
- * stripRight - Trim trailing newline/CR/space characters (in place).
+/*
+ stripRight - Trim trailing newline/CR/space characters (in place).
  */
 static void stripRight(char* s)
 {
@@ -431,9 +431,9 @@ static void stripRight(char* s)
     }
 }
 
-/**
- * csvReadField - Read one CSV field respecting quotes and commas.
- * No dynamic allocation, safe for fixed-size outputs.
+/*
+ + csvReadField - Read one CSV field respecting quotes and commas.
+ + No dynamic allocation, safe for fixed-size outputs.
  */
 static void
 csvReadField(const char* line, size_t* pos, char* out, size_t outSize)
@@ -510,8 +510,8 @@ csvReadField(const char* line, size_t* pos, char* out, size_t outSize)
     *pos   = i;
 }
 
-/**
- * parseProgressSafe - Parse "N" or "N%" into [0..100].
+/*
+ - parseProgressSafe - Parse "N" or "N%" into [0..100].
  */
 static int parseProgressSafe(const char* s)
 {
@@ -545,9 +545,9 @@ static int parseProgressSafe(const char* s)
     return (int) val;
 }
 
-/**
- * isNumericId - Check if a string is a pure unsigned integer (ignoring BOM
- * and surrounding whitespace). Allows optional leading '+'.
+/*
+ + isNumericId - Check if a string is a pure unsigned integer (ignoring BOM
+ + and surrounding whitespace). Allows optional leading '+'.
  */
 static int isNumericId(const char* s)
 {
@@ -558,7 +558,6 @@ static int isNumericId(const char* s)
         return 0;
     }
 
-    /* Skip UTF-8 BOM if present */
     if ((unsigned char) s[0] == 0xEF && (unsigned char) s[1] == 0xBB &&
         (unsigned char) s[2] == 0xBF)
     {
@@ -594,9 +593,9 @@ static int isNumericId(const char* s)
     return seen && *s == '\0';
 }
 
-/**
- * csvWriteQuoted - Write a CSV field enclosed in quotes.
- * Internal quotes are doubled per RFC 4180.
+/*
+ + csvWriteQuoted - Write a CSV field enclosed in quotes.
+ + Internal quotes are doubled per RFC 4180.
  */
 static void csvWriteQuoted(FILE* fp, const char* s)
 {
@@ -621,20 +620,20 @@ static void csvWriteQuoted(FILE* fp, const char* s)
     fputc('"', fp);
 }
 
-/**
- * flushLine - Discard all characters up to newline/EOF.
+/*
+ flushLine - Discard all characters up to newline/EOF.
  */
 static void flushLine(void)
 {
     int ch;
     while ((ch = getchar()) != '\n' && ch != EOF)
     {
-        /* no-op */
+
     }
 }
 
-/**
- * fileExists - Return 1 if file at path can be opened for reading.
+/*
+ fileExists - Return 1 if file at path can be opened for reading.
  */
 static int fileExists(const char* path)
 {
@@ -647,8 +646,8 @@ static int fileExists(const char* path)
     return 0;
 }
 
-/**
- * ensureParentDir - Create parent directory (idempotent).
+/*
+ ensureParentDir - Create parent directory (idempotent).
  */
 static void ensureParentDir(const char* filePath)
 {
@@ -662,26 +661,26 @@ static void ensureParentDir(const char* filePath)
     if (slash)
     {
         *slash = '\0';
-        /* If already exists, mkdir will fail harmlessly. */
+        // If already exists, mkdir will fail harmlessly. 
         mkdir(buf, 0755);
     }
 }
 
-/**
- * toAbsPath - Resolve absolute path if possible; otherwise copy input.
+/*
+ toAbsPath - Resolve absolute path if possible; otherwise copy input.
  */
 static void toAbsPath(const char* in, char* out, size_t outSize)
 {
     if (!realpath(in, out))
     {
-        /* realpath fails when file doesn't yet exist */
+        // realpath fails when file doesn't yet exist 
         safeCopy(out, outSize, in);
         out[outSize - 1] = '\0';
     }
 }
 
-/**
- * safeCopy - Copy at most dstSize-1 chars and NUL-terminate.
+/*
+ safeCopy - Copy at most dstSize-1 chars and NUL-terminate.
  */
 static void safeCopy(char* dst, size_t dstSize, const char* src)
 {
@@ -706,11 +705,11 @@ static void safeCopy(char* dst, size_t dstSize, const char* src)
     dst[i] = '\0';
 }
 
-/* 7) File I/O */
+// 6) File I/O
 
-/**
- * inputReadFile - Load tasks from a CSV file into a fixed-size array.
- * Skips headers (non-numeric first field) and tolerates empty fields.
+/*
+ + inputReadFile - Load tasks from a CSV file into a fixed-size array.
+ + Skips headers (non-numeric first field) and tolerates empty fields.
  */
 void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
 {
@@ -739,7 +738,7 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
         size_t pos                 = 0;
         char   idBuf[32]           = {0};
         char   titleBuf[MAX_TITLE] = {0};
-        char   tmpBuf[128]         = {0}; /* Skip "Detail" */
+        char   tmpBuf[128]         = {0}; // Skip "Detail"
         char   statusBuf[32]       = {0};
 
         stripRight(line);
@@ -748,13 +747,13 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
             continue;
         }
 
-        /* Parse first 4 fields: ID, Title, Detail, Status */
+        // Parse first 4 fields: ID, Title, Detail, Status 
         csvReadField(line, &pos, idBuf, sizeof idBuf);
         csvReadField(line, &pos, titleBuf, sizeof titleBuf);
-        csvReadField(line, &pos, tmpBuf, sizeof tmpBuf);       /* Detail */
-        csvReadField(line, &pos, statusBuf, sizeof statusBuf); /* Status */
+        csvReadField(line, &pos, tmpBuf, sizeof tmpBuf);       // Detail 
+        csvReadField(line, &pos, statusBuf, sizeof statusBuf); // Status 
 
-        /* Skip header lines where first field is not numeric */
+        // Skip header lines where first field is not numeric 
         if (!isNumericId(idBuf))
         {
             continue;
@@ -765,29 +764,29 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
             break;
         }
 
-        /* ID from file or auto if invalid */
+        // ID from file or auto if invalid 
         tasks[*taskCount].id =
            (idBuf[0] != '\0') ? atoi(idBuf) : (*taskCount + 1);
 
-        /* Title */
+        // Title 
         safeCopy(tasks[*taskCount].list,
                  sizeof tasks[*taskCount].list,
                  titleBuf);
         tasks[*taskCount].list[MAX_TITLE - 1] = '\0';
 
-        /* Progress accepts "x%", " x  %", etc. */
+        // Progress accepts "x%", " x  %", etc. 
         tasks[*taskCount].progress = parseProgressSafe(statusBuf);
 
         (*taskCount)++;
     }
 
     fclose(fp);
-    /* Keep IDs from file; UI uses 1..N indices separately. */
+    // Keep IDs from file; UI uses 1..N indices separately.
 }
 
-/**
- * outputWriteFile - Write tasks to CSV with 6 columns:
- * ID,Title,Detail,Status,Priority,Deadline
+/*
+ + outputWriteFile - Write tasks to CSV with 6 columns:
+ + ID,Title,Detail,Status,Priority,Deadline
  */
 void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
 {
@@ -807,7 +806,7 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
         return;
     }
 
-    /* Header 2 lines (parser skips them because first field isn't numeric) */
+    // Header 2 lines (parser skips them because first field isn't numeric) 
     fputs("ID,Title,Detail,Status,Priority,Deadline\n", fp);
     fputs("\"Unique task identifier\",\"Brief task name\","
           "\"Task description\",\"Completion percentage\","
@@ -825,27 +824,27 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
         if (p > 100)
             p = 100;
 
-        /* ID (unquoted) */
+        // ID (unquoted)
         fprintf(fp, "%d,", id);
 
-        /* Title */
+        // Title 
         csvWriteQuoted(fp, tasks[i].list);
         fputc(',', fp);
 
-        /* Detail: currently unmanaged -> empty but keep column */
+        // Detail: currently unmanaged -> empty but keep column 
         csvWriteQuoted(fp, "");
         fputc(',', fp);
 
-        /* Status: as "N%" (unquoted; parser accepts it) */
+        // Status: as "N%" (unquoted; parser accepts it) 
         snprintf(statusBuf, sizeof statusBuf, "%d%%", p);
         fputs(statusBuf, fp);
         fputc(',', fp);
 
-        /* Priority (empty) */
+        // Priority (empty) 
         csvWriteQuoted(fp, "");
         fputc(',', fp);
 
-        /* Deadline (empty) */
+        // Deadline (empty) 
         csvWriteQuoted(fp, "");
         fputc('\n', fp);
     }
@@ -856,7 +855,7 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
     printf("Saved %d task(s) to: %s\n", taskCount, absFile);
 }
 
-/* 8) main - placed last per file structure rules. */
+// 7) main
 int main(void)
 {
     Task        tasks[MAX_TASK];
@@ -865,7 +864,7 @@ int main(void)
     char        absFile[PATH_MAX];
     int         created = 0;
 
-    /* If file doesn't exist -> create with 2-line header */
+    // If file doesn't exist -> create with 2-line header 
     if (!fileExists(file))
     {
         ensureParentDir(file);
@@ -873,7 +872,7 @@ int main(void)
         created = 1;
     }
 
-    /* Load data */
+    // Load data 
     inputReadFile(file, tasks, &taskCount);
     toAbsPath(file, absFile, sizeof absFile);
 
@@ -886,7 +885,7 @@ int main(void)
         printf("Loaded %d tasks from: %s\n", taskCount, absFile);
     }
 
-    /* Menu loop */
+    // Menu loop 
     while (1)
     {
         int userOption;
