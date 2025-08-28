@@ -628,7 +628,6 @@ static void flushLine(void)
     int ch;
     while ((ch = getchar()) != '\n' && ch != EOF)
     {
-
     }
 }
 
@@ -661,7 +660,7 @@ static void ensureParentDir(const char* filePath)
     if (slash)
     {
         *slash = '\0';
-        // If already exists, mkdir will fail harmlessly. 
+        // If already exists, mkdir will fail harmlessly.
         mkdir(buf, 0755);
     }
 }
@@ -673,7 +672,7 @@ static void toAbsPath(const char* in, char* out, size_t outSize)
 {
     if (!realpath(in, out))
     {
-        // realpath fails when file doesn't yet exist 
+        // realpath fails when file doesn't yet exist
         safeCopy(out, outSize, in);
         out[outSize - 1] = '\0';
     }
@@ -747,13 +746,13 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
             continue;
         }
 
-        // Parse first 4 fields: ID, Title, Detail, Status 
+        // Parse first 4 fields: ID, Title, Detail, Status
         csvReadField(line, &pos, idBuf, sizeof idBuf);
         csvReadField(line, &pos, titleBuf, sizeof titleBuf);
-        csvReadField(line, &pos, tmpBuf, sizeof tmpBuf);       // Detail 
-        csvReadField(line, &pos, statusBuf, sizeof statusBuf); // Status 
+        csvReadField(line, &pos, tmpBuf, sizeof tmpBuf);       // Detail
+        csvReadField(line, &pos, statusBuf, sizeof statusBuf); // Status
 
-        // Skip header lines where first field is not numeric 
+        // Skip header lines where first field is not numeric
         if (!isNumericId(idBuf))
         {
             continue;
@@ -764,17 +763,17 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
             break;
         }
 
-        // ID from file or auto if invalid 
+        // ID from file or auto if invalid
         tasks[*taskCount].id =
            (idBuf[0] != '\0') ? atoi(idBuf) : (*taskCount + 1);
 
-        // Title 
+        // Title
         safeCopy(tasks[*taskCount].list,
                  sizeof tasks[*taskCount].list,
                  titleBuf);
         tasks[*taskCount].list[MAX_TITLE - 1] = '\0';
 
-        // Progress accepts "x%", " x  %", etc. 
+        // Progress accepts "x%", " x  %", etc.
         tasks[*taskCount].progress = parseProgressSafe(statusBuf);
 
         (*taskCount)++;
@@ -806,7 +805,7 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
         return;
     }
 
-    // Header 2 lines (parser skips them because first field isn't numeric) 
+    // Header 2 lines (parser skips them because first field isn't numeric)
     fputs("ID,Title,Detail,Status,Priority,Deadline\n", fp);
     fputs("\"Unique task identifier\",\"Brief task name\","
           "\"Task description\",\"Completion percentage\","
@@ -827,24 +826,24 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
         // ID (unquoted)
         fprintf(fp, "%d,", id);
 
-        // Title 
+        // Title
         csvWriteQuoted(fp, tasks[i].list);
         fputc(',', fp);
 
-        // Detail: currently unmanaged -> empty but keep column 
+        // Detail: currently unmanaged -> empty but keep column
         csvWriteQuoted(fp, "");
         fputc(',', fp);
 
-        // Status: as "N%" (unquoted; parser accepts it) 
+        // Status: as "N%" (unquoted; parser accepts it)
         snprintf(statusBuf, sizeof statusBuf, "%d%%", p);
         fputs(statusBuf, fp);
         fputc(',', fp);
 
-        // Priority (empty) 
+        // Priority (empty)
         csvWriteQuoted(fp, "");
         fputc(',', fp);
 
-        // Deadline (empty) 
+        // Deadline (empty)
         csvWriteQuoted(fp, "");
         fputc('\n', fp);
     }
@@ -864,7 +863,7 @@ int main(void)
     char        absFile[PATH_MAX];
     int         created = 0;
 
-    // If file doesn't exist -> create with 2-line header 
+    // If file doesn't exist -> create with 2-line header
     if (!fileExists(file))
     {
         ensureParentDir(file);
@@ -872,7 +871,7 @@ int main(void)
         created = 1;
     }
 
-    // Load data 
+    // Load data
     inputReadFile(file, tasks, &taskCount);
     toAbsPath(file, absFile, sizeof absFile);
 
@@ -885,7 +884,7 @@ int main(void)
         printf("Loaded %d tasks from: %s\n", taskCount, absFile);
     }
 
-    // Menu loop 
+    // Menu loop
     while (1)
     {
         int userOption;
