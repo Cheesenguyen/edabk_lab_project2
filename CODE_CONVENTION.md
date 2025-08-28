@@ -185,8 +185,8 @@ static void normalizeInput(char *str) {
 - { always on its own line (Allman style) — per GNU/GNOME standard.
 - Use {} for all if, for, while, even single-line bodies.
 - Do not put functions, loops, conditions, or if blocks on the same line if too long.
-- Break line before binary operators like +, -, *, ...
-- Break line before ?: operator for readability.
+- Do not break line before binary operators like +, -, *, ...
+- DO not reak line before ?: operator for readability.
 - Do not put return type on a separate line.
 - Long string literals should be split for readability.
 
@@ -389,18 +389,18 @@ int maxUsers   = 100;  // maximum users allowed
 int timeout    = 30;   // timeout in seconds
 int retryCount = 5;    // retry attempts
 ```
-- Do not align consecutive macros.
+- Align consecutive macros.
 *Bad example*
 ```c
 #define MAX_SIZE 100
 #define MIN_SIZE 10
-#define NAME     "Config"
+#define NAME "Config"
 
 *Correct example*
 ```c
 #define MAX_SIZE 100
 #define MIN_SIZE 10
-#define NAME "Config"
+#define NAME     "Config"
 ```
 - Left-align escape lines in strings.
 
