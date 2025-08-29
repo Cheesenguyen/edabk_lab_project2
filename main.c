@@ -193,9 +193,7 @@ void systemEditTask(Task tasks[], int* taskCount)
     index0 = inputGetId(*taskCount) - 1;
 
     printf("Editing [%d] %s - %d%%\n",
-           index0 + 1,
-           tasks[index0].title,
-           tasks[index0].status);
+       tasks[index0].id, tasks[index0].title, tasks[index0].status);
 
     // New title (Enter to skip)
     printf("New title (Enter to skip): ");
@@ -250,11 +248,9 @@ void outputViewTasks(const Task tasks[], int taskCount)
 
     for (i = 0; i < taskCount; i++)
     {
-        printf("[%d] #%d  \"%s\"  - Status: %d%%\n",
-               i + 1,
-               tasks[i].id,
-               tasks[i].title,
-               tasks[i].status);
+        printf("[%d]  \"%s\"  - Status: %d%%\n",
+       tasks[i].id, tasks[i].title, tasks[i].status);
+
     }
 }
 
@@ -317,7 +313,7 @@ void systemSearchTask(const Task tasks[], int taskCount)
     {
         if (strstr(tasks[i].title, keyword) != NULL)
         {
-            printf("[%d] %s\n", i + 1, tasks[i].title);
+            printf("[%d] %s\n", tasks[i].id, tasks[i].title);
             found = 1;
         }
     }
