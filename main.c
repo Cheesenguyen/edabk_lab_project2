@@ -22,11 +22,17 @@
 #endif
 
 // 3) Types
+/* 
+ * Task data model required by the assignment:
+ * - Exactly 3 attributes: id, title, status
+ * - No dynamic allocation (fixed-size buffers)
+ * - Field names match "ID, title, status" semantics
+ */
 typedef struct
 {
-    int  id;
-    char list[MAX_TITLE];
-    int  progress; // Completion percentage
+    int  id;                   // Unique (enforced while reading)
+    char title[MAX_TITLE];     // Task title
+    int  status;               // Completion percentage [0..100]
 } Task;
 
 // 4) Function prototypes
@@ -37,14 +43,13 @@ int inputGetProgress(void);
 
 void inputNewTask(Task tasks[], int* taskCount);
 int  systemDeleteTask(Task tasks[], int* taskCount, int index1Based);
-void systemEditTask(const char* filePath, Task tasks[], int* taskCount);
+void systemEditTask(Task tasks[], int* taskCount);
 void outputViewTasks(const Task tasks[], int taskCount);
 void systemSortListOfTask(Task tasks[], int taskCount);
 void systemSearchTask(const Task tasks[], int taskCount);
 void systemResponse(int         choice,
                     Task        tasks[],
-                    int*        taskCount,
-                    const char* filePath);
+                    int*        taskCount);
 
 void inputReadFile(const char* filePath, Task tasks[], int* taskCount);
 void outputWriteFile(const char* filePath, const Task tasks[], int taskCount);
@@ -58,16 +63,13 @@ static int  parseProgressSafe(const char* s);
 static int  isNumericId(const char* s);
 static void csvWriteQuoted(FILE* fp, const char* s);
 static int  fileExists(const char* path);
-static void ensureParentDir(const char* filePath);
 static void toAbsPath(const char* in, char* out, size_t outSize);
 static void safeCopy(char* dst, size_t dstSize, const char* src);
+static int  isIdUsed(const Task tasks[], int count, int id);
+static int  nextFreePositiveId(const Task tasks[], int count, int startFrom);
 
 // 5) Function implementations
 
-/*
- + inputGetOption - Read a menu option from the user.
- + Returns: integer in range [0, LAST_OPTION].
- */
 int inputGetOption(void)
 {
     int userOption;
@@ -86,11 +88,6 @@ int inputGetOption(void)
     }
 }
 
-/*
- + inputGetId - Read a task ID (1-based) from the user.
- + totalTasks: number of tasks currently available.
- * Returns: integer in range [1, totalTasks].
- */
 int inputGetId(int totalTasks)
 {
     int taskId;
@@ -108,10 +105,6 @@ int inputGetId(int totalTasks)
     }
 }
 
-/*
- + inputGetProgress - Read a progress percentage from the user.
- + Returns: integer in range [0, 100].
- */
 int inputGetProgress(void)
 {
     int taskProgress;
@@ -130,11 +123,6 @@ int inputGetProgress(void)
     }
 }
 
-/*
- + inputNewTask - Append a new task to the array.
- + tasks:      array of Task.
- + taskCount:  in/out count of tasks.
- */
 void inputNewTask(Task tasks[], int* taskCount)
 {
     if (*taskCount == MAX_TASK)
@@ -146,25 +134,23 @@ void inputNewTask(Task tasks[], int* taskCount)
     printf("Enter task title: ");
     flushLine();
 
-    if (!fgets(tasks[*taskCount].list, MAX_TITLE, stdin))
+    if (!fgets(tasks[*taskCount].title, MAX_TITLE, stdin))
     {
         fprintf(stderr, "Input error (title).\n");
         return;
     }
 
-    tasks[*taskCount].list[strcspn(tasks[*taskCount].list, "\n")] = '\0';
+    tasks[*taskCount].title[strcspn(tasks[*taskCount].title, "\n")] = '\0';
 
-    tasks[*taskCount].id       = *taskCount + 1; // Keep legacy numbering
-    tasks[*taskCount].progress = inputGetProgress();
+    // Assign a unique ID (next free positive integer starting from count+1)
+    tasks[*taskCount].id = nextFreePositiveId(tasks, *taskCount, *taskCount + 1);
+
+    tasks[*taskCount].status = inputGetProgress();
     (*taskCount)++;
 
     printf("Task added successfully!\n");
 }
 
-/*
- + systemDeleteTask - Delete a task by 1-based index.
- + Returns: 1 on success, 0 on failure.
- */
 int systemDeleteTask(Task tasks[], int* taskCount, int index1Based)
 {
     int index0 = index1Based - 1;
@@ -191,18 +177,13 @@ int systemDeleteTask(Task tasks[], int* taskCount, int index1Based)
     return 1;
 }
 
-/*
- + systemEditTask - Edit a task (title and/or progress).
- + Reads the file first to keep previous behavior.
- */
-void systemEditTask(const char* filePath, Task tasks[], int* taskCount)
+void systemEditTask(Task tasks[], int* taskCount)
 {
     int  index0;
     char newTitle[MAX_TITLE];
     char buf[16];
     int  p;
 
-    inputReadFile(filePath, tasks, taskCount);
     if (*taskCount == 0)
     {
         printf("No tasks available to edit.\n");
@@ -213,8 +194,8 @@ void systemEditTask(const char* filePath, Task tasks[], int* taskCount)
 
     printf("Editing [%d] %s - %d%%\n",
            index0 + 1,
-           tasks[index0].list,
-           tasks[index0].progress);
+           tasks[index0].title,
+           tasks[index0].status);
 
     // New title (Enter to skip)
     printf("New title (Enter to skip): ");
@@ -229,15 +210,15 @@ void systemEditTask(const char* filePath, Task tasks[], int* taskCount)
     if (newTitle[0] != '\n')
     {
         newTitle[strcspn(newTitle, "\n")] = '\0';
-        safeCopy(tasks[index0].list, sizeof tasks[index0].list, newTitle);
-        tasks[index0].list[MAX_TITLE - 1] = '\0';
+        safeCopy(tasks[index0].title, sizeof tasks[index0].title, newTitle);
+        tasks[index0].title[MAX_TITLE - 1] = '\0';
     }
 
-    // New progress (Enter to skip): accept N or N%
-    printf("New progress (Enter to skip): ");
+    // New status (Enter to skip)
+    printf("New status (Enter to skip): ");
     if (!fgets(buf, sizeof buf, stdin))
     {
-        fprintf(stderr, "Input error (progress).\n");
+        fprintf(stderr, "Input error (status).\n");
         return;
     }
 
@@ -246,21 +227,17 @@ void systemEditTask(const char* filePath, Task tasks[], int* taskCount)
         p = atoi(buf);
         if (p >= 0 && p <= 100)
         {
-            tasks[index0].progress = p;
+            tasks[index0].status = p;
         }
         else
         {
-            printf("Invalid progress, keeping previous value.\n");
+            printf("Invalid status, keeping previous value.\n");
         }
     }
 
-    outputWriteFile(filePath, tasks, *taskCount);
-    printf("Task updated successfully!\n");
+    printf("Task updated successfully (in-memory)!\n");
 }
 
-/*
- outputViewTasks - Print all tasks.
- */
 void outputViewTasks(const Task tasks[], int taskCount)
 {
     int i;
@@ -273,16 +250,14 @@ void outputViewTasks(const Task tasks[], int taskCount)
 
     for (i = 0; i < taskCount; i++)
     {
-        printf("[%d] %s - Progress: %d%%\n",
+        printf("[%d] #%d  \"%s\"  - Status: %d%%\n",
                i + 1,
-               tasks[i].list,
-               tasks[i].progress);
+               tasks[i].id,
+               tasks[i].title,
+               tasks[i].status);
     }
 }
 
-/*
- systemSortListOfTask - Sort tasks by progress (ascending) using Shell sort.
- */
 void systemSortListOfTask(Task tasks[], int taskCount)
 {
     int gap, i, j;
@@ -300,7 +275,7 @@ void systemSortListOfTask(Task tasks[], int taskCount)
             Task tmp = tasks[i];
             j        = i;
 
-            while (j >= gap && tasks[j - gap].progress > tmp.progress)
+            while (j >= gap && tasks[j - gap].status > tmp.status)
             {
                 tasks[j] = tasks[j - gap];
                 j -= gap;
@@ -310,13 +285,10 @@ void systemSortListOfTask(Task tasks[], int taskCount)
         }
     }
 
-    printf("Tasks sorted by progress.\n");
+    printf("Tasks sorted by status.\n");
     outputViewTasks(tasks, taskCount);
 }
 
-/*
- systemSearchTask - Search tasks by title substring.
- */
 void systemSearchTask(const Task tasks[], int taskCount)
 {
     char keyword[MAX_TITLE];
@@ -343,9 +315,9 @@ void systemSearchTask(const Task tasks[], int taskCount)
     printf("Search results:\n");
     for (i = 0; i < taskCount; i++)
     {
-        if (strstr(tasks[i].list, keyword) != NULL)
+        if (strstr(tasks[i].title, keyword) != NULL)
         {
-            printf("[%d] %s\n", i + 1, tasks[i].list);
+            printf("[%d] %s\n", i + 1, tasks[i].title);
             found = 1;
         }
     }
@@ -356,13 +328,9 @@ void systemSearchTask(const Task tasks[], int taskCount)
     }
 }
 
-/*
- systemResponse - Dispatch a menu choice.
- */
 void systemResponse(int         choice,
                     Task        tasks[],
-                    int*        taskCount,
-                    const char* filePath)
+                    int*        taskCount)
 {
     switch (choice)
     {
@@ -382,7 +350,7 @@ void systemResponse(int         choice,
         }
         case 3:
         {
-            systemEditTask(filePath, tasks, taskCount);
+            systemEditTask(tasks, taskCount);
             break;
         }
         case 4:
@@ -410,10 +378,6 @@ void systemResponse(int         choice,
 }
 
 // Helpers
-
-/*
- stripRight - Trim trailing newline/CR/space characters (in place).
- */
 static void stripRight(char* s)
 {
     size_t n;
@@ -431,10 +395,6 @@ static void stripRight(char* s)
     }
 }
 
-/*
- + csvReadField - Read one CSV field respecting quotes and commas.
- + No dynamic allocation, safe for fixed-size outputs.
- */
 static void
 csvReadField(const char* line, size_t* pos, char* out, size_t outSize)
 {
@@ -464,7 +424,6 @@ csvReadField(const char* line, size_t* pos, char* out, size_t outSize)
             {
                 if (line[i + 1] == '"')
                 {
-                    /* "" -> a single " in data */
                     if (o + 1 < outSize)
                     {
                         out[o++] = '"';
@@ -473,7 +432,6 @@ csvReadField(const char* line, size_t* pos, char* out, size_t outSize)
                 }
                 else
                 {
-                    /* end field */
                     i++;
                     if (line[i] == ',')
                     {
@@ -510,9 +468,6 @@ csvReadField(const char* line, size_t* pos, char* out, size_t outSize)
     *pos   = i;
 }
 
-/*
- - parseProgressSafe - Parse "N" or "N%" into [0..100].
- */
 static int parseProgressSafe(const char* s)
 {
     long val = 0;
@@ -533,22 +488,12 @@ static int parseProgressSafe(const char* s)
         s++;
     }
 
-    if (val < 0)
-    {
-        val = 0;
-    }
-    if (val > 100)
-    {
-        val = 100;
-    }
+    if (val < 0)  val = 0;
+    if (val > 100) val = 100;
 
     return (int) val;
 }
 
-/*
- + isNumericId - Check if a string is a pure unsigned integer (ignoring BOM
- + and surrounding whitespace). Allows optional leading '+'.
- */
 static int isNumericId(const char* s)
 {
     int seen = 0;
@@ -593,10 +538,6 @@ static int isNumericId(const char* s)
     return seen && *s == '\0';
 }
 
-/*
- + csvWriteQuoted - Write a CSV field enclosed in quotes.
- + Internal quotes are doubled per RFC 4180.
- */
 static void csvWriteQuoted(FILE* fp, const char* s)
 {
     const char* p;
@@ -620,9 +561,6 @@ static void csvWriteQuoted(FILE* fp, const char* s)
     fputc('"', fp);
 }
 
-/*
- flushLine - Discard all characters up to newline/EOF.
- */
 static void flushLine(void)
 {
     int ch;
@@ -631,9 +569,6 @@ static void flushLine(void)
     }
 }
 
-/*
- fileExists - Return 1 if file at path can be opened for reading.
- */
 static int fileExists(const char* path)
 {
     FILE* f = fopen(path, "r");
@@ -645,42 +580,15 @@ static int fileExists(const char* path)
     return 0;
 }
 
-/*
- ensureParentDir - Create parent directory (idempotent).
- */
-static void ensureParentDir(const char* filePath)
-{
-    char  buf[PATH_MAX];
-    char* slash;
-
-    safeCopy(buf, sizeof buf, filePath);
-    buf[sizeof buf - 1] = '\0';
-
-    slash = strrchr(buf, '/');
-    if (slash)
-    {
-        *slash = '\0';
-        // If already exists, mkdir will fail harmlessly.
-        mkdir(buf, 0755);
-    }
-}
-
-/*
- toAbsPath - Resolve absolute path if possible; otherwise copy input.
- */
 static void toAbsPath(const char* in, char* out, size_t outSize)
 {
     if (!realpath(in, out))
     {
-        // realpath fails when file doesn't yet exist
         safeCopy(out, outSize, in);
         out[outSize - 1] = '\0';
     }
 }
 
-/*
- safeCopy - Copy at most dstSize-1 chars and NUL-terminate.
- */
 static void safeCopy(char* dst, size_t dstSize, const char* src)
 {
     size_t i = 0;
@@ -704,19 +612,33 @@ static void safeCopy(char* dst, size_t dstSize, const char* src)
     dst[i] = '\0';
 }
 
+static int isIdUsed(const Task tasks[], int count, int id)
+{
+    int i;
+    for (i = 0; i < count; ++i)
+    {
+        if (tasks[i].id == id)
+            return 1;
+    }
+    return 0;
+}
+
+static int nextFreePositiveId(const Task tasks[], int count, int startFrom)
+{
+    int candidate = (startFrom <= 0) ? 1 : startFrom;
+    while (isIdUsed(tasks, count, candidate))
+    {
+        ++candidate;
+    }
+    return candidate;
+}
+
 // 6) File I/O
 
-/*
- + inputReadFile - Load tasks from a CSV file into a fixed-size array.
- + Skips headers (non-numeric first field) and tolerates empty fields.
- */
 void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
 {
     FILE* fp;
-    enum
-    {
-        MAX_LINE = 4096
-    };
+    enum { MAX_LINE = 4096 };
     char line[MAX_LINE];
 
     if (!filePath || !tasks || !taskCount)
@@ -737,8 +659,10 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
         size_t pos                 = 0;
         char   idBuf[32]           = {0};
         char   titleBuf[MAX_TITLE] = {0};
-        char   tmpBuf[128]         = {0}; // Skip "Detail"
+        char   skipBuf[128]        = {0};
         char   statusBuf[32]       = {0};
+        int rawId;
+        int uniqueId;
 
         stripRight(line);
         if (line[0] == '\0')
@@ -746,13 +670,22 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
             continue;
         }
 
-        // Parse first 4 fields: ID, Title, Detail, Status
+        // Parse: ID, Title, (maybe Detail), Status
         csvReadField(line, &pos, idBuf, sizeof idBuf);
         csvReadField(line, &pos, titleBuf, sizeof titleBuf);
-        csvReadField(line, &pos, tmpBuf, sizeof tmpBuf);       // Detail
-        csvReadField(line, &pos, statusBuf, sizeof statusBuf); // Status
 
-        // Skip header lines where first field is not numeric
+        // detail giữa title và status (nếu có) → bỏ qua
+        csvReadField(line, &pos, skipBuf, sizeof skipBuf);
+        if (strchr(skipBuf, '%') || isdigit((unsigned char)skipBuf[0]))
+        {
+            safeCopy(statusBuf, sizeof statusBuf, skipBuf);
+        }
+        else
+        {
+            csvReadField(line, &pos, statusBuf, sizeof statusBuf);
+        }
+
+        // Bỏ qua header
         if (!isNumericId(idBuf))
         {
             continue;
@@ -763,29 +696,29 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
             break;
         }
 
-        // ID from file or auto if invalid
-        tasks[*taskCount].id =
-           (idBuf[0] != '\0') ? atoi(idBuf) : (*taskCount + 1);
+        rawId = (idBuf[0] != '\0') ? atoi(idBuf) : (*taskCount + 1);
+        if (rawId <= 0) rawId = 1;
+        uniqueId = isIdUsed(tasks, *taskCount, rawId)
+                     ? nextFreePositiveId(tasks, *taskCount, rawId + 1)
+                     : rawId;
+        tasks[*taskCount].id = uniqueId;
 
-        // Title
-        safeCopy(tasks[*taskCount].list,
-                 sizeof tasks[*taskCount].list,
+        safeCopy(tasks[*taskCount].title,
+                 sizeof tasks[*taskCount].title,
                  titleBuf);
-        tasks[*taskCount].list[MAX_TITLE - 1] = '\0';
+        tasks[*taskCount].title[MAX_TITLE - 1] = '\0';
 
-        // Progress accepts "x%", " x  %", etc.
-        tasks[*taskCount].progress = parseProgressSafe(statusBuf);
+        tasks[*taskCount].status = parseProgressSafe(statusBuf);
 
         (*taskCount)++;
     }
 
     fclose(fp);
-    // Keep IDs from file; UI uses 1..N indices separately.
 }
 
-/*
- + outputWriteFile - Write tasks to CSV with 6 columns:
- + ID,Title,Detail,Status,Priority,Deadline
+/* 
+ * Giữ nguyên outputWriteFile(...) như bạn muốn.
+ * (Đã viết theo định dạng 6 cột; nếu bản của bạn khác vẫn dùng bản của bạn.)
  */
 void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
 {
@@ -805,7 +738,6 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
         return;
     }
 
-    // Header 2 lines (parser skips them because first field isn't numeric)
     fputs("ID,Title,Detail,Status,Priority,Deadline\n", fp);
     fputs("\"Unique task identifier\",\"Brief task name\","
           "\"Task description\",\"Completion percentage\","
@@ -815,37 +747,19 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
     for (i = 0; i < taskCount && i < MAX_TASK; ++i)
     {
         int  id = tasks[i].id > 0 ? tasks[i].id : (i + 1);
-        int  p  = tasks[i].progress;
+        int  p  = tasks[i].status;
         char statusBuf[16];
 
-        if (p < 0)
-            p = 0;
-        if (p > 100)
-            p = 100;
+        if (p < 0) p = 0;
+        if (p > 100) p = 100;
 
-        // ID (unquoted)
         fprintf(fp, "%d,", id);
-
-        // Title
-        csvWriteQuoted(fp, tasks[i].list);
-        fputc(',', fp);
-
-        // Detail: currently unmanaged -> empty but keep column
-        csvWriteQuoted(fp, "");
-        fputc(',', fp);
-
-        // Status: as "N%" (unquoted; parser accepts it)
+        csvWriteQuoted(fp, tasks[i].title); fputc(',', fp);
+        csvWriteQuoted(fp, "");             fputc(',', fp);
         snprintf(statusBuf, sizeof statusBuf, "%d%%", p);
-        fputs(statusBuf, fp);
-        fputc(',', fp);
-
-        // Priority (empty)
-        csvWriteQuoted(fp, "");
-        fputc(',', fp);
-
-        // Deadline (empty)
-        csvWriteQuoted(fp, "");
-        fputc('\n', fp);
+        fputs(statusBuf, fp);               fputc(',', fp);
+        csvWriteQuoted(fp, "");             fputc(',', fp);
+        csvWriteQuoted(fp, "");             fputc('\n', fp);
     }
 
     fclose(fp);
@@ -861,30 +775,18 @@ int main(void)
     const char* file      = "./docs/task.csv";
     int         taskCount = 0;
     char        absFile[PATH_MAX];
-    int         created = 0;
 
-    // If file doesn't exist -> create with 2-line header
     if (!fileExists(file))
     {
-        ensureParentDir(file);
-        outputWriteFile(file, tasks, 0);
-        created = 1;
+        fprintf(stderr, "Data file not found: %s\n", file);
+        fprintf(stderr, "Program will not create it automatically.\n");
+        return 1;
     }
 
-    // Load data
     inputReadFile(file, tasks, &taskCount);
     toAbsPath(file, absFile, sizeof absFile);
+    printf("Loaded %d tasks from: %s\n", taskCount, absFile);
 
-    if (created)
-    {
-        printf("Created new data file: %s\n", absFile);
-    }
-    else
-    {
-        printf("Loaded %d tasks from: %s\n", taskCount, absFile);
-    }
-
-    // Menu loop
     while (1)
     {
         int userOption;
@@ -898,7 +800,13 @@ int main(void)
         printf("0. Exit\n");
 
         userOption = inputGetOption();
-        systemResponse(userOption, tasks, &taskCount, file);
-        outputWriteFile(file, tasks, taskCount);
+        systemResponse(userOption, tasks, &taskCount);
+        /* Persist only when data is mutated by user:
+           1: Add, 2: Delete, 3: Edit
+           Search (5) & Sort (4) do NOT write to file.
+        */
+        if (userOption == 1 || userOption == 2 || userOption == 3) {
+            outputWriteFile(file, tasks, taskCount);
+        }
     }
 }
