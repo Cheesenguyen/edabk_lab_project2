@@ -22,7 +22,7 @@
 #endif
 
 // 3) Types
-/* 
+/*
  * Task data model required by the assignment:
  * - Exactly 3 attributes: id, title, status
  * - No dynamic allocation (fixed-size buffers)
@@ -30,9 +30,9 @@
  */
 typedef struct
 {
-    int  id;                   // Unique (enforced while reading)
-    char title[MAX_TITLE];     // Task title
-    int  status;               // Completion percentage [0..100]
+    int  id;               // Unique (enforced while reading)
+    char title[MAX_TITLE]; // Task title
+    int  status;           // Completion percentage [0..100]
 } Task;
 
 // 4) Function prototypes
@@ -47,9 +47,7 @@ void systemEditTask(Task tasks[], int* taskCount);
 void outputViewTasks(const Task tasks[], int taskCount);
 void systemSortListOfTask(Task tasks[], int taskCount);
 void systemSearchTask(const Task tasks[], int taskCount);
-void systemResponse(int         choice,
-                    Task        tasks[],
-                    int*        taskCount);
+void systemResponse(int choice, Task tasks[], int* taskCount);
 
 void inputReadFile(const char* filePath, Task tasks[], int* taskCount);
 void outputWriteFile(const char* filePath, const Task tasks[], int taskCount);
@@ -67,7 +65,7 @@ static void toAbsPath(const char* in, char* out, size_t outSize);
 static void safeCopy(char* dst, size_t dstSize, const char* src);
 static int  isIdUsed(const Task tasks[], int count, int id);
 static int  nextFreePositiveId(const Task tasks[], int count, int startFrom);
-static int findIndexById(const Task tasks[], int count, int id);
+static int  findIndexById(const Task tasks[], int count, int id);
 
 // 5) Function implementations
 
@@ -144,7 +142,8 @@ void inputNewTask(Task tasks[], int* taskCount)
     tasks[*taskCount].title[strcspn(tasks[*taskCount].title, "\n")] = '\0';
 
     // Assign a unique ID (next free positive integer starting from count+1)
-    tasks[*taskCount].id = nextFreePositiveId(tasks, *taskCount, *taskCount + 1);
+    tasks[*taskCount].id =
+       nextFreePositiveId(tasks, *taskCount, *taskCount + 1);
 
     tasks[*taskCount].status = inputGetProgress();
     (*taskCount)++;
@@ -192,7 +191,7 @@ void systemEditTask(Task tasks[], int* taskCount)
     }
 
     pickedId = inputGetId();
-    index0 = findIndexById(tasks, *taskCount, pickedId);
+    index0   = findIndexById(tasks, *taskCount, pickedId);
     if (index0 < 0)
     {
         printf("ID not found.\n");
@@ -200,7 +199,9 @@ void systemEditTask(Task tasks[], int* taskCount)
     }
 
     printf("Editing [%d] %s - %d%%\n",
-       tasks[index0].id, tasks[index0].title, tasks[index0].status);
+           tasks[index0].id,
+           tasks[index0].title,
+           tasks[index0].status);
 
     // New title (Enter to skip)
     printf("New title (Enter to skip): ");
@@ -256,8 +257,9 @@ void outputViewTasks(const Task tasks[], int taskCount)
     for (i = 0; i < taskCount; i++)
     {
         printf("[%d]  \"%s\"  - Status: %d%%\n",
-       tasks[i].id, tasks[i].title, tasks[i].status);
-
+               tasks[i].id,
+               tasks[i].title,
+               tasks[i].status);
     }
 }
 
@@ -331,9 +333,7 @@ void systemSearchTask(const Task tasks[], int taskCount)
     }
 }
 
-void systemResponse(int         choice,
-                    Task        tasks[],
-                    int*        taskCount)
+void systemResponse(int choice, Task tasks[], int* taskCount)
 {
     switch (choice)
     {
@@ -345,7 +345,7 @@ void systemResponse(int         choice,
         case 2:
         {
             int pickedId = inputGetId();
-            int idx0 = findIndexById(tasks, *taskCount, pickedId);
+            int idx0     = findIndexById(tasks, *taskCount, pickedId);
             if (idx0 >= 0 && systemDeleteTask(tasks, taskCount, idx0 + 1))
             {
                 printf("Task deleted successfully!\n");
@@ -496,8 +496,10 @@ static int parseProgressSafe(const char* s)
         s++;
     }
 
-    if (val < 0)  val = 0;
-    if (val > 100) val = 100;
+    if (val < 0)
+        val = 0;
+    if (val > 100)
+        val = 100;
 
     return (int) val;
 }
@@ -646,7 +648,10 @@ static int nextFreePositiveId(const Task tasks[], int count, int startFrom)
 void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
 {
     FILE* fp;
-    enum { MAX_LINE = 4096 };
+    enum
+    {
+        MAX_LINE = 4096
+    };
     char line[MAX_LINE];
 
     if (!filePath || !tasks || !taskCount)
@@ -669,8 +674,8 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
         char   titleBuf[MAX_TITLE] = {0};
         char   skipBuf[128]        = {0};
         char   statusBuf[32]       = {0};
-        int rawId;
-        int uniqueId;
+        int    rawId;
+        int    uniqueId;
 
         stripRight(line);
         if (line[0] == '\0')
@@ -684,7 +689,7 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
 
         // detail giữa title và status (nếu có) → bỏ qua
         csvReadField(line, &pos, skipBuf, sizeof skipBuf);
-        if (strchr(skipBuf, '%') || isdigit((unsigned char)skipBuf[0]))
+        if (strchr(skipBuf, '%') || isdigit((unsigned char) skipBuf[0]))
         {
             safeCopy(statusBuf, sizeof statusBuf, skipBuf);
         }
@@ -705,10 +710,11 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
         }
 
         rawId = (idBuf[0] != '\0') ? atoi(idBuf) : (*taskCount + 1);
-        if (rawId <= 0) rawId = 1;
-        uniqueId = isIdUsed(tasks, *taskCount, rawId)
-                     ? nextFreePositiveId(tasks, *taskCount, rawId + 1)
-                     : rawId;
+        if (rawId <= 0)
+            rawId = 1;
+        uniqueId             = isIdUsed(tasks, *taskCount, rawId) ?
+                                  nextFreePositiveId(tasks, *taskCount, rawId + 1) :
+                                  rawId;
         tasks[*taskCount].id = uniqueId;
 
         safeCopy(tasks[*taskCount].title,
@@ -724,7 +730,7 @@ void inputReadFile(const char* filePath, Task tasks[], int* taskCount)
     fclose(fp);
 }
 
-/* 
+/*
  * Giữ nguyên outputWriteFile(...) như bạn muốn.
  * (Đã viết theo định dạng 6 cột; nếu bản của bạn khác vẫn dùng bản của bạn.)
  */
@@ -758,16 +764,23 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
         int  p  = tasks[i].status;
         char statusBuf[16];
 
-        if (p < 0) p = 0;
-        if (p > 100) p = 100;
+        if (p < 0)
+            p = 0;
+        if (p > 100)
+            p = 100;
 
         fprintf(fp, "%d,", id);
-        csvWriteQuoted(fp, tasks[i].title); fputc(',', fp);
-        csvWriteQuoted(fp, "");             fputc(',', fp);
+        csvWriteQuoted(fp, tasks[i].title);
+        fputc(',', fp);
+        csvWriteQuoted(fp, "");
+        fputc(',', fp);
         snprintf(statusBuf, sizeof statusBuf, "%d%%", p);
-        fputs(statusBuf, fp);               fputc(',', fp);
-        csvWriteQuoted(fp, "");             fputc(',', fp);
-        csvWriteQuoted(fp, "");             fputc('\n', fp);
+        fputs(statusBuf, fp);
+        fputc(',', fp);
+        csvWriteQuoted(fp, "");
+        fputc(',', fp);
+        csvWriteQuoted(fp, "");
+        fputc('\n', fp);
     }
 
     fclose(fp);
@@ -779,7 +792,8 @@ static int findIndexById(const Task tasks[], int count, int id)
 {
     int i;
     for (i = 0; i < count; ++i)
-        if (tasks[i].id == id) return i;
+        if (tasks[i].id == id)
+            return i;
     return -1;
 }
 
@@ -820,11 +834,11 @@ int main(void)
            1: Add, 2: Delete, 3: Edit
            Search (5) & Sort (4) do NOT write to file.
         */
-        if (userOption == 1 || userOption == 2 || userOption == 3 || userOption == 4) 
+        if (userOption == 1 || userOption == 2 || userOption == 3 ||
+            userOption == 4)
         {
             mkdir("data", 0777);
             outputWriteFile("./data/task.csv", tasks, taskCount);
         }
-
     }
 }
