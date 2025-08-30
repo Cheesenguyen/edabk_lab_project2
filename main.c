@@ -820,8 +820,11 @@ int main(void)
            1: Add, 2: Delete, 3: Edit
            Search (5) & Sort (4) do NOT write to file.
         */
-        if (userOption == 1 || userOption == 2 || userOption == 3) {
-            outputWriteFile(file, tasks, taskCount);
+        if (userOption == 1 || userOption == 2 || userOption == 3 || userOption == 4) 
+        {
+            mkdir("data", 0777);
+            outputWriteFile("./data/task.csv", tasks, taskCount);
         }
+
     }
 }
