@@ -38,7 +38,7 @@ typedef struct
 // 4) Function prototypes
 
 int inputGetOption(void);
-int inputGetId(int totalTasks);
+int inputGetId(void);
 int inputGetProgress(void);
 
 void inputNewTask(Task tasks[], int* taskCount);
@@ -67,6 +67,7 @@ static void toAbsPath(const char* in, char* out, size_t outSize);
 static void safeCopy(char* dst, size_t dstSize, const char* src);
 static int  isIdUsed(const Task tasks[], int count, int id);
 static int  nextFreePositiveId(const Task tasks[], int count, int startFrom);
+static int findIndexById(const Task tasks[], int count, int id);
 
 // 5) Function implementations
 
@@ -88,14 +89,14 @@ int inputGetOption(void)
     }
 }
 
-int inputGetId(int totalTasks)
+int inputGetId(void)
 {
     int taskId;
 
     while (1)
     {
         printf("Task ID: ");
-        if (scanf("%d", &taskId) == 1 && taskId >= 1 && taskId <= totalTasks)
+        if (scanf("%d", &taskId) == 1 && taskId >= 1)
         {
             return taskId;
         }
@@ -179,7 +180,7 @@ int systemDeleteTask(Task tasks[], int* taskCount, int index1Based)
 
 void systemEditTask(Task tasks[], int* taskCount)
 {
-    int  index0;
+    int  index0, pickedId;
     char newTitle[MAX_TITLE];
     char buf[16];
     int  p;
@@ -190,7 +191,13 @@ void systemEditTask(Task tasks[], int* taskCount)
         return;
     }
 
-    index0 = inputGetId(*taskCount) - 1;
+    pickedId = inputGetId();
+    index0 = findIndexById(tasks, *taskCount, pickedId);
+    if (index0 < 0)
+    {
+        printf("ID not found.\n");
+        return;
+    }
 
     printf("Editing [%d] %s - %d%%\n",
        tasks[index0].id, tasks[index0].title, tasks[index0].status);
@@ -337,10 +344,15 @@ void systemResponse(int         choice,
         }
         case 2:
         {
-            int deleteIdx = inputGetId(*taskCount);
-            if (systemDeleteTask(tasks, taskCount, deleteIdx))
+            int pickedId = inputGetId();
+            int idx0 = findIndexById(tasks, *taskCount, pickedId);
+            if (idx0 >= 0 && systemDeleteTask(tasks, taskCount, idx0 + 1))
             {
                 printf("Task deleted successfully!\n");
+            }
+            else
+            {
+                printf("ID not found.\n");
             }
             break;
         }
@@ -762,6 +774,13 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
 
     toAbsPath(filePath, absFile, sizeof absFile);
     printf("Saved %d task(s) to: %s\n", taskCount, absFile);
+}
+static int findIndexById(const Task tasks[], int count, int id)
+{
+    int i;
+    for (i = 0; i < count; ++i)
+        if (tasks[i].id == id) return i;
+    return -1;
 }
 
 // 7) main
