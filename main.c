@@ -60,7 +60,7 @@ csvReadField(const char* line, size_t* pos, char* out, size_t outSize);
 static int  parseProgressSafe(const char* s);
 static int  isNumericId(const char* s);
 static void csvWriteQuoted(FILE* fp, const char* s);
-//static int  fileExists(const char* path);
+// static int  fileExists(const char* path);
 static void toAbsPath(const char* in, char* out, size_t outSize);
 static void safeCopy(char* dst, size_t dstSize, const char* src);
 static int  isIdUsed(const Task tasks[], int count, int id);
@@ -94,12 +94,14 @@ int inputGetId(void)
     while (1)
     {
         printf("Task ID: ");
+
         if (scanf("%d", &taskId) == 1 && taskId >= 1)
         {
             return taskId;
         }
 
         printf("Invalid ID. Please try again!\n");
+
         flushLine();
     }
 }
@@ -143,6 +145,7 @@ void inputNewTask(Task tasks[], int* taskCount)
 
     // Assign a unique ID (next free positive integer starting from count+1)
     tasks[*taskCount].id =
+
        nextFreePositiveId(tasks, *taskCount, *taskCount + 1);
 
     tasks[*taskCount].status = inputGetProgress();
@@ -807,18 +810,21 @@ int main(void)
     char        absFile[PATH_MAX];
 
     FILE* fchk = fopen(file, "r");
-    if (fchk) {
-        fclose(fchk);  /* Có sẵn data/task.csv -> dùng luôn */
-    } else {
-        file = "./docs/task.csv";  /* Chưa có -> đọc bản gốc để seed */
+    if (fchk)
+    {
+        fclose(fchk); /* Có sẵn data/task.csv -> dùng luôn */
+    }
+    else
+    {
+        file = "./docs/task.csv"; /* Chưa có -> đọc bản gốc để seed */
     }
 
     inputReadFile(file, tasks, &taskCount);
-    if (strcmp(file, "./docs/task.csv") == 0) 
+    if (strcmp(file, "./docs/task.csv") == 0)
     {
-    mkdir("data", 0777);
-    outputWriteFile("./data/task.csv", tasks, taskCount);
-    file = "./data/task.csv";  /* Từ đây về sau biến file trỏ về data */
+        mkdir("data", 0777);
+        outputWriteFile("./data/task.csv", tasks, taskCount);
+        file = "./data/task.csv"; /* Từ đây về sau biến file trỏ về data */
     }
     toAbsPath(file, absFile, sizeof absFile);
     printf("Loaded %d tasks from: %s\n", taskCount, absFile);
