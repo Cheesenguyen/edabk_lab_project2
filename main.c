@@ -94,14 +94,12 @@ int inputGetId(void)
     while (1)
     {
         printf("Task ID: ");
-
         if (scanf("%d", &taskId) == 1 && taskId >= 1)
         {
             return taskId;
         }
 
         printf("Invalid ID. Please try again!\n");
-
         flushLine();
     }
 }
@@ -145,7 +143,6 @@ void inputNewTask(Task tasks[], int* taskCount)
 
     // Assign a unique ID (next free positive integer starting from count+1)
     tasks[*taskCount].id =
-
        nextFreePositiveId(tasks, *taskCount, *taskCount + 1);
 
     tasks[*taskCount].status = inputGetProgress();
