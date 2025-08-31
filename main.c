@@ -60,7 +60,7 @@ csvReadField(const char* line, size_t* pos, char* out, size_t outSize);
 static int  parseProgressSafe(const char* s);
 static int  isNumericId(const char* s);
 static void csvWriteQuoted(FILE* fp, const char* s);
-static int  fileExists(const char* path);
+//static int  fileExists(const char* path);
 static void toAbsPath(const char* in, char* out, size_t outSize);
 static void safeCopy(char* dst, size_t dstSize, const char* src);
 static int  isIdUsed(const Task tasks[], int count, int id);
@@ -579,7 +579,7 @@ static void flushLine(void)
     }
 }
 
-static int fileExists(const char* path)
+/*static int fileExists(const char* path)
 {
     FILE* f = fopen(path, "r");
     if (f)
@@ -588,7 +588,7 @@ static int fileExists(const char* path)
         return 1;
     }
     return 0;
-}
+}*/
 
 static void toAbsPath(const char* in, char* out, size_t outSize)
 {
@@ -782,7 +782,8 @@ void outputWriteFile(const char* filePath, const Task tasks[], int taskCount)
         csvWriteQuoted(fp, "");
         fputc('\n', fp);
     }
-
+    fflush(fp);
+    fsync(fileno(fp));
     fclose(fp);
 
     toAbsPath(filePath, absFile, sizeof absFile);
@@ -801,18 +802,24 @@ static int findIndexById(const Task tasks[], int count, int id)
 int main(void)
 {
     Task        tasks[MAX_TASK];
-    const char* file      = "./docs/task.csv";
+    const char* file      = "./data/task.csv";
     int         taskCount = 0;
     char        absFile[PATH_MAX];
 
-    if (!fileExists(file))
-    {
-        fprintf(stderr, "Data file not found: %s\n", file);
-        fprintf(stderr, "Program will not create it automatically.\n");
-        return 1;
+    FILE* fchk = fopen(file, "r");
+    if (fchk) {
+        fclose(fchk);  /* Có sẵn data/task.csv -> dùng luôn */
+    } else {
+        file = "./docs/task.csv";  /* Chưa có -> đọc bản gốc để seed */
     }
 
     inputReadFile(file, tasks, &taskCount);
+    if (strcmp(file, "./docs/task.csv") == 0) 
+    {
+    mkdir("data", 0777);
+    outputWriteFile("./data/task.csv", tasks, taskCount);
+    file = "./data/task.csv";  /* Từ đây về sau biến file trỏ về data */
+    }
     toAbsPath(file, absFile, sizeof absFile);
     printf("Loaded %d tasks from: %s\n", taskCount, absFile);
 
