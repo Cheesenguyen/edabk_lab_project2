@@ -1,7 +1,7 @@
 ID,Title,Detail,Status,Priority,Deadline
 "Unique task identifier as number: 0 and positive interger, up to 9 digits 
-e.g: ID: 1, ID: 2, ID: 2024","Brief task name: ASCII 31-126, no accents
-E.g: house work, learn code","Task description: ASCII 31-126, no accents
+e.g: ID: 1, ID: 2, ID: 2024","Brief task name: numbers, letters, punctuation, and no accents
+E.g: house work, learn code","Task description: numbers, letters, punctuation, and no accents
 E.g: Learn C++ and do assignment 1","Completion percentage: positive interger 0 - 100
 E.g: 30%, 40%","Priority level: interger 1-5 (1 = highest, 5 = lowest)
 E.g : 4","Task due date: dd/mm/yyyy, not in the past
